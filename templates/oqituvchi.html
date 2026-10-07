@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O‘qituvchi Ishchi Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        const ustozData = JSON.parse(sessionStorage.getItem("oqituvchi_auth") || "null");
+        if (!ustozData) {
+            window.location.href = "/oqituvchi-login";
+        }
+        function chiqish() {
+            sessionStorage.removeItem("oqituvchi_auth");
+            window.location.href = "/oqituvchi-login";
+        }
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* 1-USLUB: YUMSHOQ PASTEL GRADIENT FON */
+        body { 
+            background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #fdf2f8 100%);
+            color: #1e293b; 
+            min-height: 100vh; 
+            padding-bottom: 50px; 
+        }
+
+        .header { 
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e0e7ff; 
+            padding: 16px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .logo { font-weight: 800; font-size: 18px; color: #4338ca; }
+        .nav-actions { display: flex; align-items: center; gap: 12px; }
+        .btn-admin-back { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; }
+        .btn-exit { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        
+        .container { max-width: 1050px; margin: 30px auto; padding: 0 20px; }
+        .card { 
+            background: #ffffff; 
+            border-radius: 20px; 
+            padding: 30px; 
+            border: 1px solid rgba(224, 231, 255, 0.8); 
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.05); 
+            margin-bottom: 25px; 
+        }
+        h2 { font-size: 19px; font-weight: 800; color: #1e1b4b; margin-bottom: 18px; }
+        
+        .sinf-selector-bar { 
+            background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%); 
+            border: 1.5px solid #c7d2fe; 
+            border-radius: 16px; 
+            padding: 18px 24px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            gap: 15px; 
+            margin-bottom: 24px; 
+            flex-wrap: wrap; 
+        }
+        .sinf-selector-bar label { font-size: 15px; font-weight: 800; color: #3730a3; }
+        .sinf-selector-bar select { padding: 11px 20px; border: 2px solid #6366f1; border-radius: 10px; font-size: 15px; font-weight: 800; color: #3730a3; outline: none; background: white; cursor: pointer; }
+
+        .excel-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .tab-btn { background: #f1f5f9; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; color: #475569; }
+        .tab-btn.active { background: #4f46e5; color: white; }
+        
+        .upload-section { background: #faf5ff; border: 1.5px dashed #818cf8; border-radius: 16px; padding: 25px; text-align: center; }
+        .btn-download-shablon { display: inline-block; background: #ffffff; color: #4f46e5; border: 2px solid #6366f1; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
+        .btn-download-shablon:hover { background: #4f46e5; color: white; }
+
+        .param-grid { display: flex; gap: 14px; justify-content: center; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+        .param-item { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #3730a3; }
+        .param-item select { padding: 9px 14px; border: 1.5px solid #c7d2fe; border-radius: 8px; font-size: 13px; font-weight: 700; outline: none; background: white; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 13px; font-weight: 600; color: #334155; }
+        input, select { padding: 11px 13px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 14px; outline: none; }
+        button.submit-btn { background: #4f46e5; color: white; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 15px; width: 100%; transition: 0.2s; }
+        button.submit-btn:hover { background: #4338ca; }
+        
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 580px; }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+        th { background: #f8fafc; font-weight: 700; }
+        .badge-sinf { background: #ede9fe; color: #6d28d9; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">👩‍🏫 O‘qituvchi Paneli | <span id="ustozIsm" style="color: #4f46e5;">-</span></div>
+        <div class="nav-actions">
+            <a href="/admin" class="btn-admin-back" id="adminBackBtn" style="display: none;">🔐 Super Adminga qaytish</a>
+            <button class="btn-exit" onclick="chiqish()">🚪 Chiqish</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- SINF TANLASH ASOSIY FILTRI -->
+        <div class="sinf-selector-bar">
+            <label>📚 Ishlayotgan sinfingizni tanlang:</label>
+            <select id="asosiySinfTanlash" onchange="sinfAlmashtirish(this.value)">
+                <option value="5" selected>5-sinf</option>
+                <option value="6">6-sinf</option>
+                <option value="7">7-sinf</option>
+                <option value="8">8-sinf</option>
+                <option value="9">9-sinf</option>
+                <option value="10">10-sinf</option>
+                <option value="11">11-sinf</option>
+                <option value="barchasi">Barcha sinflar birga</option>
+            </select>
+        </div>
+
+        <!-- 1. EXCEL ORQALI YUKLASH -->
+        <div class="card">
+            <h2>📊 Excel orqali natijalarni yuklash</h2>
+            <div class="excel-tabs">
+                <button class="tab-btn active" id="btnTabHafta" onclick="almashtirExcelTab('haftalik')">📅 Haftalik testlar</button>
+                <button class="tab-btn" id="btnTabOy" onclick="almashtirExcelTab('oylik')">🏆 Oylik olimpiada</button>
+            </div>
+
+            <!-- HAFTALIK TEST -->
+            <div class="upload-section" id="haftalikUploadBox">
+                <p style="font-size: 14px; color: #3730a3; margin-bottom: 12px; font-weight: 700;">
+                    1. <span class="shablonSinfNom">5-sinf</span> uchun Haftalik test shablonini yuklab oling:
+                </p>
+                <button type="button" onclick="yuklabOlishShablon('haftalik')" class="btn-download-shablon">
+                    📥 <span class="shablonSinfNom">5-sinf</span> Haftalik Shablonini Yuklab Olish (.xlsx)
+                </button>
+                
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 14px; font-weight: 600;">
+                    2. Qaysi oy va haftaning natijasi ekanini belgilab, Excel faylni yuklang:
+                </p>
+                
+                <form onsubmit="yuklashExcelFayl(event, 'haftalik')">
+                    <div class="param-grid">
+                        <div class="param-item">
+                            Oy:
+                            <select id="haftalikYuklashOy">
+                                <option value="Sentyabr">Sentyabr</option>
+                                <option value="Oktyabr" selected>Oktyabr</option>
+                                <option value="Noyabr">Noyabr</option>
+                                <option value="Dekabr">Dekabr</option>
+                                <option value="Yanvar">Yanvar</option>
+                                <option value="Fevral">Fevral</option>
+                                <option value="Mart">Mart</option>
+                                <option value="Aprel">Aprel</option>
+                                <option value="May">May</option>
+                                <option value="Iyun">Iyun</option>
+                                <option value="Iyul">Iyul</option>
+                                <option value="Avgust">Avgust</option>
+                            </select>
+                        </div>
+                        <div class="param-item">
+                            Hafta:
+                            <select id="haftalikYuklashHafta">
+                                <option value="1" selected>1-hafta</option>
+                                <option value="2">2-hafta</option>
+                                <option value="3">3-hafta</option>
+                                <option value="4">4-hafta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; max-width: 500px; margin: 0 auto; flex-wrap: wrap;">
+                        <input type="file" id="faylHaftalik" accept=".xlsx, .xls" required style="background: white; flex: 1;">
+                        <button type="submit" style="background: #4f46e5; color: white; border: none; padding: 11px 22px; border-radius: 9px; font-weight: 700; cursor: pointer;">🚀 Yuklash</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- OYLIK OLIMPIADA -->
+            <div class="upload-section" id="oylikUploadBox" style="display: none; border-color: #059669; background: #ecfdf5;">
+                <p style="font-size: 14px; color: #065f46; margin-bottom: 12px; font-weight: 700;">
+                    1. <span class="shablonSinfNom">5-sinf</span> uchun Oylik olimpiada shablonini yuklab oling:
+                </p>
+                <button type="button" onclick="yuklabOlishShablon('oylik')" class="btn-download-shablon" style="color: #059669; border-color: #059669;">
+                    📥 <span class="shablonSinfNom">5-sinf</span> Oylik Shablonini Yuklab Olish (.xlsx)
+                </button>
+                
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 14px; font-weight: 600;">
+                    2. Qaysi oy olimpiadasi ekanini belgilab, faylni yuklang:
+                </p>
+
+                <form onsubmit="yuklashExcelFayl(event, 'oylik')">
+                    <div class="param-grid">
+                        <div class="param-item">
+                            Olimpiada oyi:
+                            <select id="oylikYuklashOy">
+                                <option value="Sentyabr">Sentyabr</option>
+                                <option value="Oktyabr" selected>Oktyabr</option>
+                                <option value="Noyabr">Noyabr</option>
+                                <option value="Dekabr">Dekabr</option>
+                                <option value="Yanvar">Yanvar</option>
+                                <option value="Fevral">Fevral</option>
+                                <option value="Mart">Mart</option>
+                                <option value="Aprel">Aprel</option>
+                                <option value="May">May</option>
+                                <option value="Iyun">Iyun</option>
+                                <option value="Iyul">Iyul</option>
+                                <option value="Avgust">Avgust</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; max-width: 500px; margin: 0 auto; flex-wrap: wrap;">
+                        <input type="file" id="faylOylik" accept=".xlsx, .xls" required style="background: white; flex: 1;">
+                        <button type="submit" style="background: #059669; color: white; border: none; padding: 11px 22px; border-radius: 9px; font-weight: 700; cursor: pointer;">🚀 Yuklash</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. YAKKA TARTIBDA KIRITISH -->
+        <div class="card">
+            <h2>📝 Yakka tartibda natija kiritish</h2>
+            <form id="natijaForm">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>O‘quvchi telefon raqami (Login):</label>
+                        <input type="tel" id="telefon" placeholder="+998913080637" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Fan nomi:</label>
+                        <input type="text" id="fan" readonly style="background: #f1f5f9; font-weight: 700;">
+                    </div>
+                    <div class="input-group">
+                        <label>Sinov turi:</label>
+                        <select id="bosqich_turi" onchange="tekshirHafta(this.value)">
+                            <option value="haftalik">Haftalik test</option>
+                            <option value="oylik">Oylik olimpiada</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Oy nomi:</label>
+                        <select id="oy_nomi" required>
+                            <option value="Sentyabr">Sentyabr</option>
+                            <option value="Oktyabr" selected>Oktyabr</option>
+                            <option value="Noyabr">Noyabr</option>
+                            <option value="Dekabr">Dekabr</option>
+                            <option value="Yanvar">Yanvar</option>
+                            <option value="Fevral">Fevral</option>
+                            <option value="Mart">Mart</option>
+                            <option value="Aprel">Aprel</option>
+                            <option value="May">May</option>
+                            <option value="Iyun">Iyun</option>
+                            <option value="Iyul">Iyul</option>
+                            <option value="Avgust">Avgust</option>
+                        </select>
+                    </div>
+                    <div class="input-group" id="haftaGroup">
+                        <label>Hafta raqami:</label>
+                        <select id="hafta_raqami">
+                            <option value="1">1-hafta</option>
+                            <option value="2">2-hafta</option>
+                            <option value="3">3-hafta</option>
+                            <option value="4">4-hafta</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>To‘plagan balli:</label>
+                        <input type="number" id="ball" placeholder="Masalan: 88" required min="0" max="100">
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">💾 Natijani Saqlash</button>
+            </form>
+        </div>
+
+        <!-- 3. SINF RO'YXATI -->
+        <div class="card">
+            <h2>👥 <span id="jadvalSarlavha">5-sinf</span> o‘quvchilari ro‘yxati</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>F.I.O</th>
+                            <th>Telefon (Login)</th>
+                            <th>Sinfi</th>
+                            <th>Maktabi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="oquvchilarTable">
+                        <tr><td colspan="5" style="text-align: center;">Yuklanmoqda...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById("ustozIsm").innerText = `${ustozData.fio} (${ustozData.fan})`;
+        document.getElementById("fan").value = ustozData.fan;
+
+        if (sessionStorage.getItem("admin_auth")) {
+            document.getElementById("adminBackBtn").style.display = "inline-block";
+        }
+
+        let barchaOquvchilar = [];
+
+        function yuklabOlishShablon(tur) {
+            const tanlanganSinf = document.getElementById("asosiySinfTanlash").value;
+            const fan = ustozData.fan || "Informatika";
+            window.location.href = `/api/admin/shablon/${tur}?sinf=${tanlanganSinf}&fan=${encodeURIComponent(fan)}`;
+        }
+
+        function sinfAlmashtirish(sinf) {
+            const matn = sinf === "barchasi" ? "Barcha sinflar" : `${sinf}-sinf`;
+            document.querySelectorAll(".shablonSinfNom").forEach(el => el.innerText = matn);
+            document.getElementById("jadvalSarlavha").innerText = matn;
+            chiqarishJadvalga(sinf);
+        }
+
+        function almashtirExcelTab(tur) {
+            if (tur === 'haftalik') {
+                document.getElementById("btnTabHafta").classList.add("active");
+                document.getElementById("btnTabOy").classList.remove("active");
+                document.getElementById("haftalikUploadBox").style.display = "block";
+                document.getElementById("oylikUploadBox").style.display = "none";
+            } else {
+                document.getElementById("btnTabOy").classList.add("active");
+                document.getElementById("btnTabHafta").classList.remove("active");
+                document.getElementById("oylikUploadBox").style.display = "block";
+                document.getElementById("haftalikUploadBox").style.display = "none";
+            }
+        }
+
+        function tekshirHafta(tur) {
+            document.getElementById("haftaGroup").style.display = (tur === 'oylik') ? 'none' : 'flex';
+        }
+
+        async function yuklashOquvchilar() {
+            try {
+                const res = await fetch('/api/admin/oquvchilar');
+                barchaOquvchilar = await res.json();
+                sinfAlmashtirish(document.getElementById("asosiySinfTanlash").value);
+            } catch(e) { console.error(e); }
+        }
+
+        function chiqarishJadvalga(tanlanganSinf) {
+            let saralangan = barchaOquvchilar;
+            if (tanlanganSinf !== "barchasi") {
+                saralangan = barchaOquvchilar.filter(o => String(o.sinf) === String(tanlanganSinf));
+            }
+
+            const tbody = document.getElementById("oquvchilarTable");
+            if (saralangan.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">Ushbu sinfda hali ro‘yxatdan o‘tgan o‘quvchilar mavjud emas</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = saralangan.map(o => `
+                <tr style="cursor: pointer;" onclick="document.getElementById('telefon').value = '${o.telefon}'">
+                    <td>#${o.id}</td>
+                    <td style="font-weight: 700; color: #3730a3;">${o.fio}</td>
+                    <td>${o.telefon}</td>
+                    <td><span class="badge-sinf">${o.sinf}-sinf</span></td>
+                    <td>${o.maktab}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function yuklashExcelFayl(e, tur) {
+            e.preventDefault();
+            const inputId = tur === 'haftalik' ? 'faylHaftalik' : 'faylOylik';
+            const fayl = document.getElementById(inputId).files[0];
+            if (!fayl) return;
+
+            const oy = tur === 'haftalik' ? document.getElementById("haftalikYuklashOy").value : document.getElementById("oylikYuklashOy").value;
+            const hafta = tur === 'haftalik' ? document.getElementById("haftalikYuklashHafta").value : "1";
+            const fan = ustozData.fan || "Informatika";
+
+            const formData = new FormData();
+            formData.append("fayl", fayl);
+            formData.append("bosqich_turi", tur);
+            formData.append("tanlangan_oy", oy);
+            formData.append("tanlangan_hafta", hafta);
+            formData.append("tanlangan_fan", fan);
+
+            try {
+                const res = await fetch('/api/admin/excel_yuklash', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.xabar);
+                    document.getElementById(inputId).value = "";
+                } else { alert("❌ " + (data.xatolik || "Xatolik")); }
+            } catch(err) { alert("❌ Aloqa uzildi!"); }
+        }
+
+        document.getElementById("natijaForm").onsubmit = async function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append("telefon", document.getElementById("telefon").value);
+            formData.append("fan", document.getElementById("fan").value);
+            formData.append("bosqich_turi", document.getElementById("bosqich_turi").value);
+            formData.append("oy_nomi", document.getElementById("oy_nomi").value);
+            formData.append("hafta_raqami", document.getElementById("hafta_raqami").value);
+            formData.append("ball", document.getElementById("ball").value);
+            formData.append("jami_savol", 100);
+
+            try {
+                const res = await fetch('/api/natija_qoshish', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                    alert("✅ " + data.xabar);
+                    document.getElementById("ball").value = "";
+                } else { alert("❌ " + (data.xatolik || "Xatolik")); }
+            } catch(err) { alert("❌ Xatolik yuz berdi!"); }
+        };
+
+        yuklashOquvchilar();
+    </script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Umumiy Reyting Doskasi | Olimpiada Platformasi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f8fafc; color: #1e293b; min-height: 100vh; padding-bottom: 50px; }
+        
+        .header { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+        .logo { font-weight: 800; font-size: 18px; color: #1e3a8a; display: flex; align-items: center; gap: 8px; }
+        .nav-btns { display: flex; gap: 10px; align-items: center; }
+        .btn-link { background: #eff6ff; color: #2563eb; text-decoration: none; padding: 8px 14px; border-radius: 9px; font-weight: 700; font-size: 13px; }
+        
+        .container { max-width: 950px; margin: 25px auto; padding: 0 16px; }
+        
+        /* PODIUM (1, 2, 3-O'RINLAR) */
+        .podium-box { display: flex; justify-content: center; align-items: flex-end; gap: 15px; margin: 25px 0 35px 0; }
+        .podium-card { background: white; border-radius: 18px; padding: 18px 14px; text-align: center; border: 1.5px solid #e2e8f0; width: 30%; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s; }
+        .podium-card:hover { transform: translateY(-4px); }
+        .podium-card.first { border-color: #f59e0b; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); order: 2; transform: scale(1.05); }
+        .podium-card.second { border-color: #94a3b8; order: 1; }
+        .podium-card.third { border-color: #d97706; order: 3; }
+        
+        .podium-icon { font-size: 32px; margin-bottom: 6px; }
+        .podium-fio { font-weight: 800; font-size: 15px; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .podium-meta { font-size: 12px; color: #64748b; margin-top: 3px; font-weight: 600; }
+        .podium-ball { font-weight: 800; font-size: 18px; color: #2563eb; margin-top: 8px; }
+
+        /* FILTRLAR BLOKI */
+        .filter-card { background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-bottom: 22px; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+        .filter-item { display: flex; flex-direction: column; gap: 5px; }
+        .filter-item label { font-size: 12px; font-weight: 700; color: #475569; }
+        .filter-item select { padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13px; font-weight: 700; color: #1e293b; outline: none; background: #f8fafc; }
+
+        /* REYTING JADVALI */
+        .table-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 580px; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        th { background: #f8fafc; font-weight: 800; color: #475569; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .rank-circle { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; background: #f1f5f9; color: #475569; }
+        .rank-1 { background: #fef3c7; color: #b45309; }
+        .rank-2 { background: #f1f5f9; color: #475569; }
+        .rank-3 { background: #ffedd5; color: #c2410c; }
+        
+        .my-row { background: #eff6ff !important; border-left: 4px solid #2563eb; }
+
+        @media (max-width: 650px) {
+            .podium-box { flex-direction: column; align-items: stretch; }
+            .podium-card { width: 100%; order: unset !important; transform: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">🏆 Respublika Reyting Doskasi</div>
+        <div class="nav-btns">
+            <a href="/kabinet" class="btn-link">👤 Kabinetim</a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- FILTRLAR -->
+        <div class="filter-card">
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label>Fan:</label>
+                    <select id="selFan" onchange="yuklashReyting()">
+                        <option value="Informatika">Informatika</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="Fizika">Fizika</option>
+                        <option value="Ingliz tili">Ingliz tili</option>
+                        <option value="Ona tili">Ona tili</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Sinov turi:</label>
+                    <select id="selTur" onchange="almashtirTur(this.value)">
+                        <option value="haftalik">📅 Haftalik test</option>
+                        <option value="oylik">🏆 Oylik olimpiada</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Sinf:</label>
+                    <select id="selSinf" onchange="yuklashReyting()">
+                        <option value="barchasi">Barcha sinflar</option>
+                        <option value="5" selected>5-sinf</option>
+                        <option value="6">6-sinf</option>
+                        <option value="7">7-sinf</option>
+                        <option value="8">8-sinf</option>
+                        <option value="9">9-sinf</option>
+                        <option value="10">10-sinf</option>
+                        <option value="11">11-sinf</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Oy:</label>
+                    <select id="selOy" onchange="yuklashReyting()">
+                        <option value="Oktyabr" selected>Oktyabr</option>
+                        <option value="Noyabr">Noyabr</option>
+                        <option value="Dekabr">Dekabr</option>
+                        <option value="Yanvar">Yanvar</option>
+                        <option value="Fevral">Fevral</option>
+                        <option value="Mart">Mart</option>
+                        <option value="Aprel">Aprel</option>
+                        <option value="May">May</option>
+                    </select>
+                </div>
+                <div class="filter-item" id="haftaFilterGroup">
+                    <label>Hafta:</label>
+                    <select id="selHafta" onchange="yuklashReyting()">
+                        <option value="1">1-hafta</option>
+                        <option value="2">2-hafta</option>
+                        <option value="3">3-hafta</option>
+                        <option value="4">4-hafta</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- PODIUM (TOP 3 O'QUVCHI) -->
+        <div class="podium-box" id="podiumBox" style="display: none;">
+            <!-- 2-o'rin -->
+            <div class="podium-card second" id="podium2" style="display: none;">
+                <div class="podium-icon">🥈</div>
+                <div class="podium-fio" id="p2_fio">-</div>
+                <div class="podium-meta" id="p2_meta">-</div>
+                <div class="podium-ball" id="p2_ball">0 ball</div>
+            </div>
+            <!-- 1-o'rin -->
+            <div class="podium-card first" id="podium1" style="display: none;">
+                <div class="podium-icon">🥇</div>
+                <div class="podium-fio" id="p1_fio">-</div>
+                <div class="podium-meta" id="p1_meta">-</div>
+                <div class="podium-ball" id="p1_ball">0 ball</div>
+            </div>
+            <!-- 3-o'rin -->
+            <div class="podium-card third" id="podium3" style="display: none;">
+                <div class="podium-icon">🥉</div>
+                <div class="podium-fio" id="p3_fio">-</div>
+                <div class="podium-meta" id="p3_meta">-</div>
+                <div class="podium-ball" id="p3_ball">0 ball</div>
+            </div>
+        </div>
+
+        <!-- JADVAL -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">O‘rin</th>
+                            <th>O‘quvchi F.I.O</th>
+                            <th>Sinfi</th>
+                            <th>Maktabi</th>
+                            <th>Hudud</th>
+                            <th style="text-align: right;">Ball</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reytingTableBody">
+                        <tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 30px;">Yuklanmoqda...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const meningId = localStorage.getItem("oquvchi_id");
+
+        function almashtirTur(tur) {
+            document.getElementById("haftaFilterGroup").style.display = (tur === 'oylik') ? 'none' : 'flex';
+            yuklashReyting();
+        }
+
+        async function yuklashReyting() {
+            const fan = document.getElementById("selFan").value;
+            const tur = document.getElementById("selTur").value;
+            const sinf = document.getElementById("selSinf").value;
+            const oy = document.getElementById("selOy").value;
+            const hafta = document.getElementById("selHafta").value;
+
+            try {
+                const url = `/api/reyting?fan=${encodeURIComponent(fan)}&bosqich_turi=${tur}&oy_nomi=${encodeURIComponent(oy)}&hafta_raqami=${hafta}&sinf=${sinf}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const ro'yxat = data.reyting || [];
+
+                yangilashPodium(ro'yxat);
+                yangilashJadval(ro'yxat);
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function yangilashPodium(list) {
+            const box = document.getElementById("podiumBox");
+            if (list.length === 0) {
+                box.style.display = 'none';
+                return;
+            }
+            box.style.display = 'flex';
+
+            // 1-o'rin
+            if (list[0]) {
+                document.getElementById("podium1").style.display = 'block';
+                document.getElementById("p1_fio").innerText = list[0].fio;
+                document.getElementById("p1_meta").innerText = `${list[0].sinf}-sinf, ${list[0].maktab}`;
+                document.getElementById("p1_ball").innerText = `${list[0].ball} ball`;
+            } else {
+                document.getElementById("podium1").style.display = 'none';
+            }
+
+            // 2-o'rin
+            if (list[1]) {
+                document.getElementById("podium2").style.display = 'block';
+                document.getElementById("p2_fio").innerText = list[1].fio;
+                document.getElementById("p2_meta").innerText = `${list[1].sinf}-sinf, ${list[1].maktab}`;
+                document.getElementById("p2_ball").innerText = `${list[1].ball} ball`;
+            } else {
+                document.getElementById("podium2").style.display = 'none';
+            }
+
+            // 3-o'rin
+            if (list[2]) {
+                document.getElementById("podium3").style.display = 'block';
+                document.getElementById("p3_fio").innerText = list[2].fio;
+                document.getElementById("p3_meta").innerText = `${list[2].sinf}-sinf, ${list[2].maktab}`;
+                document.getElementById("p3_ball").innerText = `${list[2].ball} ball`;
+            } else {
+                document.getElementById("podium3").style.display = 'none';
+            }
+        }
+
+        function yangilashJadval(list) {
+            const tbody = document.getElementById("reytingTableBody");
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 35px;">Ushbu davrda hali natijalar kiritilmagan</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(o => {
+                let badgeClass = "rank-circle";
+                if (o.orin === 1) badgeClass += " rank-1";
+                else if (o.orin === 2) badgeClass += " rank-2";
+                else if (o.orin === 3) badgeClass += " rank-3";
+
+                const isMe = String(o.oquvchi_id) === String(meningId);
+
+                return `
+                    <tr class="${isMe ? 'my-row' : ''}">
+                        <td><span class="${badgeClass}">${o.orin}</span></td>
+                        <td>
+                            <strong>${o.fio}</strong>
+                            ${isMe ? '<span style="font-size: 11px; background: #2563eb; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">Siz</span>' : ''}
+                        </td>
+                        <td>${o.sinf}-sinf</td>
+                        <td>${o.maktab}</td>
+                        <td>${o.viloyat || 'Buxoro'}</td>
+                        <td style="text-align: right; font-weight: 800; color: #2563eb; font-size: 15px;">${o.ball} ball</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        yuklashReyting();
+    </script>
+</body>
+</html>

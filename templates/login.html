@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kabinetga Kirish | Olimpiada Platformasi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .card { background: white; border-radius: 16px; padding: 35px; width: 100%; max-width: 420px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        h1 { font-size: 22px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px; text-align: center; }
+        p.subtitle { font-size: 13px; color: #64748b; text-align: center; margin-bottom: 25px; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        label { font-size: 13px; font-weight: 700; color: #334155; }
+        input { padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; }
+        input:focus { border-color: #2563eb; }
+        button { background: #2563eb; color: white; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:hover { background: #1d4ed8; }
+        .forgot-hint { margin-top: 18px; padding: 12px; background: #eff6ff; border-radius: 10px; font-size: 12px; color: #1e40af; text-align: center; line-height: 1.5; }
+        .bottom-link { text-align: center; margin-top: 18px; font-size: 13px; color: #64748b; }
+        .bottom-link a { color: #2563eb; text-decoration: none; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Shaxsiy Kabinetga Kirish</h1>
+        <p class="subtitle">Natijalaringiz va o‘sish grafigingizni ko‘rish uchun kiring</p>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label>Telefon raqam:</label>
+                <input type="tel" id="telefon" placeholder="+998913080637" required>
+            </div>
+            <div class="input-group">
+                <label>Parol:</label>
+                <input type="password" id="parol" placeholder="Parolingizni kiriting" required>
+            </div>
+
+            <button type="submit">Kirish 🚀</button>
+        </form>
+
+        <div class="forgot-hint">
+            💡 <strong>Parolni unutdingizmi?</strong><br>
+            Informatika fani o‘qituvchingizga murojaat qiling, parolingizni bir zumda tiklab beradi.
+        </div>
+
+        <div class="bottom-link">
+            Hali ro‘yxatdan o‘tmadingizmi? <a href="/royxat">Ro‘yxatdan o‘tish</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").onsubmit = async function(e) {
+            e.preventDefault();
+            const telefon = document.getElementById("telefon").value.trim();
+            const parol = document.getElementById("parol").value.trim();
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ telefon: telefon, parol: parol })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem("oquvchi_id", data.oquvchi.id);
+                    window.location.href = "/kabinet";
+                } else {
+                    alert("❌ " + (data.xatolik || "Telefon yoki parol noto'g'ri!"));
+                }
+            } catch(err) {
+                alert("❌ Server bilan bog'lanishda xatolik!");
+            }
+        };
+    </script>
+</body>
+</html>

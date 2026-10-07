@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Kirish | Olimpiada Markazi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #0f172a; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .card { background: #1e293b; border-radius: 16px; padding: 35px; width: 100%; max-width: 400px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .badge { display: inline-block; background: #dc2626; color: white; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px; }
+        h1 { font-size: 22px; font-weight: 800; color: white; margin-bottom: 6px; }
+        p.subtitle { font-size: 13px; color: #94a3b8; margin-bottom: 24px; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; text-align: left; }
+        label { font-size: 13px; font-weight: 700; color: #cbd5e1; }
+        input { padding: 12px 14px; border: 1.5px solid #475569; background: #0f172a; color: white; border-radius: 10px; font-size: 14px; outline: none; }
+        input:focus { border-color: #3b82f6; }
+        button { background: #2563eb; color: white; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:hover { background: #1d4ed8; }
+        .back-link { text-align: center; margin-top: 20px; font-size: 13px; }
+        .back-link a { color: #94a3b8; text-decoration: none; }
+        .back-link a:hover { color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <span class="badge">🔒 Maxfiy Hudud</span>
+        <h1>Super Admin Kirish</h1>
+        <p class="subtitle">Platforma boshqaruvi va o‘qituvchilarni biriktirish</p>
+
+        <form id="adminLoginForm">
+            <div class="input-group">
+                <label>Admin Login:</label>
+                <input type="text" id="username" placeholder="admin" required autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>Admin Parol:</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit">🔐 Admin Paneliga Kirish</button>
+        </form>
+
+        <div class="back-link">
+            <a href="/">← Bosh sahifaga qaytish</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("adminLoginForm").onsubmit = async function(e) {
+            e.preventDefault();
+            const u = document.getElementById("username").value.trim();
+            const p = document.getElementById("password").value.trim();
+
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: u,
+                        password: p,
+                        login: u,
+                        parol: p
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    sessionStorage.setItem("admin_auth", data.token || "super_admin_2026");
+                    window.location.href = "/admin";
+                } else {
+                    alert("Xatolik: " + (data.xatolik || "Login yoki parol noto‘g‘ri!"));
+                }
+            } catch(err) {
+                alert("Server bilan bog‘lanishda xatolik yuz berdi!");
+            }
+        };
+    </script>
+</body>
+</html>

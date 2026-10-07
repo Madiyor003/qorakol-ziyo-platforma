@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ro‘yxatdan o‘tish | Olimpiada Markazi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f5f9; color: #1e293b; min-height: 100vh; }
+        .header { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 800; font-size: 20px; color: #1e3a8a; }
+        .header-btns { display: flex; align-items: center; gap: 12px; }
+        .nav-btn { background: #eff6ff; color: #2563eb; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 14px; border: 1px solid #bfdbfe; transition: all 0.2s; }
+        .nav-btn:hover { background: #dbeafe; }
+        .admin-nav-btn { background: #0f172a; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 14px; border: 1px solid #1e293b; transition: all 0.2s; }
+        .admin-nav-btn:hover { background: #334155; }
+        
+        .container { max-width: 760px; margin: 40px auto; background: #ffffff; border-radius: 20px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
+        .badge { background: #eff6ff; color: #2563eb; padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 700; display: inline-block; margin-bottom: 12px; }
+        h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+        p.subtitle { color: #64748b; font-size: 14px; margin-bottom: 24px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } .container { padding: 25px; margin: 15px; } }
+        .full-width { grid-column: 1 / -1; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 13px; font-weight: 600; color: #334155; }
+        input, select { padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 14px; background: #f8fafc; outline: none; }
+        input:focus, select:focus { border-color: #2563eb; background: #ffffff; }
+        .info-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 14px 18px; border-radius: 12px; color: #166534; font-size: 13px; margin: 20px 0; }
+        button.submit-btn { background: linear-gradient(135deg, #1d4ed8, #2563eb); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; width: 100%; cursor: pointer; }
+        .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
+        .switch-link a { color: #2563eb; font-weight: 700; text-decoration: none; }
+        .admin-link-bottom { text-align: center; margin-top: 15px; font-size: 13px; }
+        .admin-link-bottom a { color: #64748b; text-decoration: none; }
+        .admin-link-bottom a:hover { color: #0f172a; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">🏆 Xususiy Maktab Olimpiada Markazi</div>
+        <div class="header-btns">
+            <a href="/login" class="nav-btn">🔑 Kabinetga Kirish</a>
+            <a href="/admin-login" class="admin-nav-btn">🔐 O‘qituvchi / Admin</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <span class="badge">O‘quvchilar Registratsiyasi</span>
+        <h1>Olimpiada va Testlarda Qatnashish</h1>
+        <p class="subtitle">Haftalik testlar va oylik respublika olimpiadalarida ishtirok etish uchun ro‘yxatdan o‘ting.</p>
+
+        <form id="regForm">
+            <div class="form-grid">
+                <div class="input-group full-width">
+                    <label>To‘liq F.I.O:</label>
+                    <input type="text" id="fio" placeholder="Masalan: Karimov Jasur Rustamovich" required>
+                </div>
+                <div class="input-group">
+                    <label>Telefon raqam (Login bo‘ladi):</label>
+                    <input type="tel" id="telefon" placeholder="+998901234567" required>
+                </div>
+                <div class="input-group">
+                    <label>Sinfingiz:</label>
+                    <select id="sinf" required>
+                        <option value="">Sinfni tanlang</option>
+                        <option value="5">5-sinf</option>
+                        <option value="6">6-sinf</option>
+                        <option value="7">7-sinf</option>
+                        <option value="8">8-sinf</option>
+                        <option value="9">9-sinf</option>
+                        <option value="10">10-sinf</option>
+                        <option value="11">11-sinf</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Viloyatingiz:</label>
+                    <select id="viloyat" required>
+                        <option value="">Viloyatni tanlang</option>
+                        <option value="Toshkent shahri">Toshkent shahri</option>
+                        <option value="Toshkent viloyati">Toshkent viloyati</option>
+                        <option value="Buxoro">Buxoro</option>
+                        <option value="Samarqand">Samarqand</option>
+                        <option value="Fargona">Farg‘ona</option>
+                        <option value="Andijon">Andijon</option>
+                        <option value="Namangan">Namangan</option>
+                        <option value="Qashqadaryo">Qashqadaryo</option>
+                        <option value="Surxondaryo">Surxondaryo</option>
+                        <option value="Xorazm">Xorazm</option>
+                        <option value="Navoiy">Navoiy</option>
+                        <option value="Jizzax">Jizzax</option>
+                        <option value="Sirdaryo">Sirdaryo</option>
+                        <option value="Qoraqalpogiston">Qoraqalpog‘iston Resp.</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Tuman / Shahar:</label>
+                    <input type="text" id="tuman" placeholder="Masalan: G‘ijduvon tumani" required>
+                </div>
+                <div class="input-group full-width">
+                    <label>Maktabingiz (Raqami yoki nomi):</label>
+                    <input type="text" id="maktab" placeholder="Masalan: 41-maktab" required>
+                </div>
+                <div class="input-group">
+                    <label>Telegram Username (Eslatmalar uchun):</label>
+                    <input type="text" id="telegram" placeholder="@username">
+                </div>
+                <div class="input-group">
+                    <label>Gmail pochta (Ixtiyoriy):</label>
+                    <input type="email" id="email" placeholder="misol@gmail.com">
+                </div>
+                <div class="input-group full-width">
+                    <label>Kabinet uchun maxfiy parol:</label>
+                    <input type="password" id="parol" placeholder="Kamida 6 ta belgi" required minlength="6">
+                </div>
+            </div>
+
+            <div class="info-box">
+                🔔 <strong>Eslatma:</strong> Ro‘yxatdan o‘tgach, sinovlar sanasi haqida Telegram yoki emailingizga xabar yuboriladi.
+            </div>
+
+            <button type="submit" class="submit-btn">🚀 Ro‘yxatdan O‘tish va Kabinet Yaratish</button>
+            <div class="switch-link">
+                Profilingiz bormi? <a href="/login">Kabinetga kirish</a>
+            </div>
+            <div class="admin-link-bottom">
+                <a href="/admin-login">👨‍🏫 O‘qituvchilar va Admin boshqaruvi uchun kirish</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("regForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const payload = {
+                fio: document.getElementById("fio").value,
+                telefon: document.getElementById("telefon").value,
+                viloyat: document.getElementById("viloyat").value,
+                tuman: document.getElementById("tuman").value,
+                maktab: document.getElementById("maktab").value,
+                sinf: parseInt(document.getElementById("sinf").value),
+                telegram_id: document.getElementById("telegram").value,
+                email: document.getElementById("email").value,
+                parol: document.getElementById("parol").value
+            };
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem("oquvchi_id", data.oquvchi_id);
+                    alert("Muvaffaqiyatli ro‘yxatdan o‘tdingiz!");
+                    window.location.href = "/kabinet";
+                } else {
+                    alert("Xatolik: " + (data.xatolik || "Xatolik yuz berdi"));
+                }
+            } catch (err) {
+                alert("Server bilan bog‘lanishda xatolik!");
+            }
+        });
+    </script>
+</body>
+</html>
