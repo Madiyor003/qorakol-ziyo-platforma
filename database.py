@@ -1,16 +1,31 @@
 # -*- coding: utf-8 -*-
+import os
 import sqlite3
 
-DB_NAME = "olimpiada.db"
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    import psycopg2
+
+def get_connection():
+    if DATABASE_URL:
+        # Render'dagi postgres:// prefiksini to'g'rilash
+        url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        return psycopg2.connect(url)
+    else:
+        return sqlite3.connect("olimpiada.db")
 
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
 
+    is_pg = bool(DATABASE_URL)
+    auto_id = "SERIAL PRIMARY KEY" if is_pg else "INTEGER PRIMARY KEY AUTOINCREMENT"
+
     # 1. O'quvchilar jadvali
-    cursor.execute("""
+    cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS oquvchilar (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {auto_id},
             fio TEXT NOT NULL,
             telefon TEXT UNIQUE NOT NULL,
             viloyat TEXT NOT NULL,
@@ -25,9 +40,9 @@ def init_db():
     """)
 
     # 2. O'qituvchilar jadvali
-    cursor.execute("""
+    cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS oqituvchilar (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {auto_id},
             fio TEXT NOT NULL,
             login TEXT UNIQUE NOT NULL,
             parol TEXT NOT NULL,
@@ -38,9 +53,9 @@ def init_db():
     """)
 
     # 3. Natijalar jadvali
-    cursor.execute("""
+    cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS natijalar (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {auto_id},
             oquvchi_id INTEGER NOT NULL,
             tadbir_id INTEGER DEFAULT 1,
             fan TEXT DEFAULT 'Informatika',
@@ -57,10 +72,10 @@ def init_db():
         )
     """)
 
-    # 4. Imtihonlar va Teskari sanoq jadvali (Yangi)
-    cursor.execute("""
+    # 4. Imtihonlar jadvali
+    cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS imtihonlar (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {auto_id},
             nomi TEXT NOT NULL,
             fan TEXT NOT NULL,
             sinf TEXT DEFAULT 'Barcha sinflar',
