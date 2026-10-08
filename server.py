@@ -5,15 +5,14 @@ import re
 import json
 import random
 import shutil
-import sqlite3
 from datetime import datetime
 import pandas as pd
 from fastapi import FastAPI, Form, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
-from typing import Optional, List, Dict
-from database import init_db, get_connection
+from typing import Optional, Dict
+from database import init_db, get_connection, DATABASE_URL
 
 app = FastAPI(title="Respublika Olimpiada Platformasi")
 
@@ -30,9 +29,11 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
+IS_PG = bool(DATABASE_URL)
+PH = "%s" if IS_PG else "?"
+
 def get_db():
-    conn = get_connection()
-    return conn
+    return get_connection()
 
 OY_NOM_RAQAM = {
     "yanvar": 1, "fevral": 2, "mart": 3, "aprel": 4,
@@ -101,7 +102,7 @@ class YangiOnlineTest(BaseModel):
     nomi: str
     fan: str
     sinf: int
-    turi: str  # kunlik, haftalik, oylik
+    turi: str
     davomiyligi_daqiqa: int = 30
     narxi: int = 0
     boshlanish_vaqti: Optional[str] = None
@@ -116,13 +117,13 @@ class BittalikSavol(BaseModel):
     variant_b: str
     variant_c: str
     variant_d: str
-    togri_javob: str  # A, B, C yoki D
+    togri_javob: str
 
 class TestTopshirish(BaseModel):
     urinish_id: int
-    javoblar: Dict[str, str]  # {"savol_id": "tanlangan_javob"}
+    javoblar: Dict[str, str]
 
-# --- Sahifalar Yo'nalishi ---
+# --- Sahifalar ---
 @app.get("/")
 async def root():
     return FileResponse(os.path.join(TEMPLATES_DIR, "index.html"))
@@ -167,33 +168,30 @@ async def online_test_page(test_id: int):
 async def aloqa_page():
     return FileResponse(os.path.join(TEMPLATES_DIR, "aloqa.html"))
 
-# ==========================================
-# 1. O'QUVCHI ROYXAT VA LOGIN
-# ==========================================
+# 1. Ro'yxatdan o'tish va Login
 @app.post("/api/register")
 async def register_student(data: OquvchiRoyxat):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute(
-            """
+        sql = f"""
             INSERT INTO oquvchilar (fio, telefon, viloyat, tuman, maktab, sinf, email, telegram_id, parol)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                data.fio.strip(),
-                data.telefon.strip(),
-                data.viloyat.strip(),
-                data.tuman.strip(),
-                data.maktab.strip(),
-                data.sinf,
-                (data.email or "").strip(),
-                (data.telegram_id or "").strip().replace("@", ""),
-                data.parol.strip()
-            )
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH})
+        """
+        params = (
+            data.fio.strip(),
+            data.telefon.strip(),
+            data.viloyat.strip(),
+            data.tuman.strip(),
+            data.maktab.strip(),
+            data.sinf,
+            (data.email or "").strip(),
+            (data.telegram_id or "").strip().replace("@", ""),
+            data.parol.strip()
         )
+        cursor.execute(sql, params)
         conn.commit()
-        return {"holat": "Muvaffaqiyatli", "oquvchi_id": cursor.lastrowid}
+        return {"holat": "Muvaffaqiyatli"}
     except Exception as e:
         if "UNIQUE" in str(e).upper() or "oquvchilar_telefon_key" in str(e).lower():
             return JSONResponse(status_code=400, content={"xatolik": "Ushbu telefon raqami allaqachon mavjud!"})
@@ -229,15 +227,15 @@ async def get_student_results(oquvchi_id: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT fio, viloyat, maktab, sinf FROM oquvchilar WHERE id = ?", (oquvchi_id,))
+        cursor.execute(f"SELECT fio, viloyat, maktab, sinf FROM oquvchilar WHERE id = {PH}", (oquvchi_id,))
         user = cursor.fetchone()
         if not user:
             return JSONResponse(status_code=404, content={"xatolik": "O‘quvchi topilmadi"})
 
-        cursor.execute("""
+        cursor.execute(f"""
             SELECT bosqich_turi, hafta_raqami, oy_raqami, oy_nomi, ball, jami_savol, orin, sana, fan, id
             FROM natijalar
-            WHERE oquvchi_id = ?
+            WHERE oquvchi_id = {PH}
             ORDER BY id DESC
         """, (oquvchi_id,))
         rows = cursor.fetchall()
@@ -264,20 +262,18 @@ async def get_student_results(oquvchi_id: int):
     finally:
         conn.close()
 
-# ==========================================
-# 2. ONLAYN TEST TIZIMI (GENERATSIYA VA YECHISH)
-# ==========================================
+# 2. Test boshqaruvi
 @app.post("/api/admin/online_test_yaratish")
 async def create_online_test(data: YangiOnlineTest):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("""
+        cursor.execute(f"""
             INSERT INTO testlar (nomi, fan, sinf, turi, davomiyligi_daqiqa, narxi, boshlanish_vaqti, tugash_vaqti, yaratuvchi_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH})
         """, (data.nomi.strip(), data.fan.strip(), data.sinf, data.turi.strip(), data.davomiyligi_daqiqa, data.narxi, data.boshlanish_vaqti, data.tugash_vaqti, data.yaratuvchi_id))
         conn.commit()
-        return {"holat": "Muvaffaqiyatli", "xabar": "Yangi test bazasi yaratildi!", "test_id": cursor.lastrowid}
+        return {"holat": "Muvaffaqiyatli", "xabar": "Yangi test bazasi yaratildi!"}
     finally:
         conn.close()
 
@@ -289,10 +285,10 @@ async def get_test_list(sinf: Optional[int] = None, fan: Optional[str] = None, o
         sql = "SELECT id, nomi, fan, sinf, turi, davomiyligi_daqiqa, narxi, boshlanish_vaqti, tugash_vaqti, javoblar_ochiq FROM testlar WHERE faol = 1"
         params = []
         if sinf:
-            sql += " AND (sinf = ? OR sinf = 0)"
+            sql += f" AND (sinf = {PH} OR sinf = 0)"
             params.append(sinf)
         if fan:
-            sql += " AND fan = ?"
+            sql += f" AND fan = {PH}"
             params.append(fan)
         sql += " ORDER BY id DESC"
         cursor.execute(sql, tuple(params))
@@ -305,30 +301,26 @@ async def get_test_list(sinf: Optional[int] = None, fan: Optional[str] = None, o
             test_id, nomi, t_fan, t_sinf, turi, daqiqa, narxi, bosh_v, tug_v, j_ochiq = t
             holat = "faol"
 
-            # Muddatni tekshirish
             if bosh_v:
                 bosh_dt = datetime.fromisoformat(str(bosh_v))
-                if hozir < bosh_dt:
-                    holat = "kutilmoqda"
+                if hozir < bosh_dt: holat = "kutilmoqda"
             if tug_v:
                 tug_dt = datetime.fromisoformat(str(tug_v))
-                if hozir > tug_dt:
-                    holat = "otkazildi"
+                if hozir > tug_dt: holat = "otkazildi"
 
-            # O'quvchi ishlaganmi yoki to'lov qilganmi tekshirish
             ishlangan = False
             toplagan_ball = None
             tolangan = False if narxi > 0 else True
 
             if oquvchi_id:
-                cursor.execute("SELECT holat, ball FROM test_urinishlari WHERE test_id = ? AND oquvchi_id = ?", (test_id, oquvchi_id))
+                cursor.execute(f"SELECT holat, ball FROM test_urinishlari WHERE test_id = {PH} AND oquvchi_id = {PH}", (test_id, oquvchi_id))
                 u = cursor.fetchone()
                 if u:
                     ishlangan = True
                     toplagan_ball = u[1]
 
                 if narxi > 0:
-                    cursor.execute("SELECT holat FROM tolovlar WHERE test_id = ? AND oquvchi_id = ? AND holat = 'tasdiqlandi'", (test_id, oquvchi_id))
+                    cursor.execute(f"SELECT holat FROM tolovlar WHERE test_id = {PH} AND oquvchi_id = {PH} AND holat = 'tasdiqlandi'", (test_id, oquvchi_id))
                     if cursor.fetchone():
                         tolangan = True
 
@@ -351,14 +343,12 @@ async def get_test_list(sinf: Optional[int] = None, fan: Optional[str] = None, o
     finally:
         conn.close()
 
-# 25 talik testni generatsiya qilib boshlash
 @app.get("/api/test/boshlash/{test_id}")
 async def start_test(test_id: int, oquvchi_id: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        # 1. Avval boshlangan sessiya bormi (F5 himoyasi)?
-        cursor.execute("SELECT id, tanlangan_savollar, holat FROM test_urinishlari WHERE test_id = ? AND oquvchi_id = ?", (test_id, oquvchi_id))
+        cursor.execute(f"SELECT id, tanlangan_savollar, holat FROM test_urinishlari WHERE test_id = {PH} AND oquvchi_id = {PH}", (test_id, oquvchi_id))
         eski_urinish = cursor.fetchone()
 
         if eski_urinish:
@@ -368,8 +358,7 @@ async def start_test(test_id: int, oquvchi_id: int):
             savollar_paketi = json.loads(eski_urinish[1])
             return {"urinish_id": urinish_id, "savollar": savollar_paketi}
 
-        # 2. Savollar bankidan 25 tasini random tanlash
-        cursor.execute("SELECT id, savol_matni, rasm_url, variant_a, variant_b, variant_c, variant_d, togri_javob FROM savollar WHERE test_id = ?", (test_id,))
+        cursor.execute(f"SELECT id, savol_matni, rasm_url, variant_a, variant_b, variant_c, variant_d, togri_javob FROM savollar WHERE test_id = {PH}", (test_id,))
         bank = cursor.fetchall()
 
         if len(bank) == 0:
@@ -395,24 +384,30 @@ async def start_test(test_id: int, oquvchi_id: int):
                 "variantlar": variantlar
             })
 
-        cursor.execute("""
-            INSERT INTO test_urinishlari (oquvchi_id, test_id, tanlangan_savollar, holat)
-            VALUES (?, ?, ?, 'boshlangan')
-        """, (oquvchi_id, test_id, json.dumps(savollar_paketi)))
-        conn.commit()
-        yangi_urinish_id = cursor.lastrowid
+        if IS_PG:
+            cursor.execute(f"""
+                INSERT INTO test_urinishlari (oquvchi_id, test_id, tanlangan_savollar, holat)
+                VALUES ({PH}, {PH}, {PH}, 'boshlangan') RETURNING id
+            """, (oquvchi_id, test_id, json.dumps(savollar_paketi)))
+            yangi_urinish_id = cursor.fetchone()[0]
+        else:
+            cursor.execute(f"""
+                INSERT INTO test_urinishlari (oquvchi_id, test_id, tanlangan_savollar, holat)
+                VALUES ({PH}, {PH}, {PH}, 'boshlangan')
+            """, (oquvchi_id, test_id, json.dumps(savollar_paketi)))
+            yangi_urinish_id = cursor.lastrowid
 
+        conn.commit()
         return {"urinish_id": yangi_urinish_id, "savollar": savollar_paketi}
     finally:
         conn.close()
 
-# Testni topshirish va natijani hisoblash
 @app.post("/api/test/topshirish")
 async def submit_test(data: TestTopshirish):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT oquvchi_id, test_id, tanlangan_savollar, boshlangan_vaqt, holat FROM test_urinishlari WHERE id = ?", (data.urinish_id,))
+        cursor.execute(f"SELECT oquvchi_id, test_id, tanlangan_savollar, boshlangan_vaqt, holat FROM test_urinishlari WHERE id = {PH}", (data.urinish_id,))
         urinish = cursor.fetchone()
 
         if not urinish:
@@ -424,8 +419,7 @@ async def submit_test(data: TestTopshirish):
         paketi = json.loads(paketi_str)
         savol_ids = [s["savol_id"] for s in paketi]
 
-        # Barcha to'g'ri javoblarni bazadan olish
-        placeholders = ",".join("?" for _ in savol_ids)
+        placeholders = ",".join(PH for _ in savol_ids)
         cursor.execute(f"SELECT id, togri_javob FROM savollar WHERE id IN ({placeholders})", tuple(savol_ids))
         togri_javoblar = dict(cursor.fetchall())
 
@@ -435,28 +429,26 @@ async def submit_test(data: TestTopshirish):
             belgilangan = data.javoblar.get(sid)
             haqiqiy_togri = togri_javoblar.get(int(sid))
             if belgilangan and haqiqiy_togri and belgilangan.strip().upper() == haqiqiy_togri.strip().upper():
-                ball += 4  # 25 ta savol * 4 ball = 100 ball
+                ball += 4
 
-        # Sarflangan soniyani hisoblash
         hozir = datetime.now()
         bosh_dt = datetime.fromisoformat(str(bosh_v)) if "T" in str(bosh_v) else datetime.strptime(str(bosh_v), "%Y-%m-%d %H:%M:%S")
         sarflangan = int((hozir - bosh_dt).total_seconds())
 
-        cursor.execute("""
+        cursor.execute(f"""
             UPDATE test_urinishlari
-            SET berilgan_javoblar = ?, ball = ?, sarflangan_soniya = ?, holat = 'yakunlangan', tugatilgan_vaqt = CURRENT_TIMESTAMP
-            WHERE id = ?
+            SET berilgan_javoblar = {PH}, ball = {PH}, sarflangan_soniya = {PH}, holat = 'yakunlangan', tugatilgan_vaqt = CURRENT_TIMESTAMP
+            WHERE id = {PH}
         """, (json.dumps(data.javoblar), ball, sarflangan, data.urinish_id))
 
-        # Umumiy natijalar jadvaliga ham qo'shib qo'yish
-        cursor.execute("SELECT fan, turi FROM testlar WHERE id = ?", (test_id,))
+        cursor.execute(f"SELECT fan, turi FROM testlar WHERE id = {PH}", (test_id,))
         t_info = cursor.fetchone()
         fan_n = t_info[0] if t_info else "Informatika"
         b_tur = t_info[1] if t_info else "kunlik"
 
-        cursor.execute("""
+        cursor.execute(f"""
             INSERT INTO natijalar (oquvchi_id, tadbir_id, fan, bosqich_turi, ball, jami_savol, sarflangan_soniya)
-            VALUES (?, ?, ?, ?, ?, 100, ?)
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, 100, {PH})
         """, (oquvchi_id, test_id, fan_n, b_tur, ball, sarflangan))
 
         conn.commit()
@@ -464,91 +456,43 @@ async def submit_test(data: TestTopshirish):
     finally:
         conn.close()
 
-# To'g'ri javoblarni o'qituvchi tomonidan ochish/yopish
 @app.put("/api/test/javoblarni_ochish/{test_id}")
 async def toggle_answers(test_id: int, ochish: bool = True):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("UPDATE testlar SET javoblar_ochiq = ? WHERE id = ?", (1 if ochish else 0, test_id))
+        cursor.execute(f"UPDATE testlar SET javoblar_ochiq = {PH} WHERE id = {PH}", (1 if ochish else 0, test_id))
         conn.commit()
-        return {"holat": "Muvaffaqiyatli", "xabar": "To‘g‘ri javoblar o‘quvchilar uchun ochildi!" if ochish else "Javoblar yopildi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "To‘g‘ri javoblar ochildi!" if ochish else "Javoblar yopildi!"}
     finally:
         conn.close()
 
-# O'quvchi uchun test tahlili (faqat o'qituvchi ochganda)
-@app.get("/api/test/tahlil/{urinish_id}")
-async def get_test_analysis(urinish_id: int):
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("""
-            SELECT u.tanlangan_savollar, u.berilgan_javoblar, u.ball, t.javoblar_ochiq, t.nomi
-            FROM test_urinishlari u
-            JOIN testlar t ON u.test_id = t.id
-            WHERE u.id = ?
-        """, (urinish_id,))
-        row = cursor.fetchone()
-        if not row:
-            return JSONResponse(status_code=404, content={"xatolik": "Natija topilmadi!"})
-
-        if not row[3]:
-            return JSONResponse(status_code=403, content={"xatolik": "Ustoz hali to‘g‘ri javoblarni ko‘rishga ruxsat bermadi!"})
-
-        paketi = json.loads(row[0])
-        javoblar = json.loads(row[1])
-        s_ids = [s["savol_id"] for s in paketi]
-        placeholders = ",".join("?" for _ in s_ids)
-        cursor.execute(f"SELECT id, togri_javob FROM savollar WHERE id IN ({placeholders})", tuple(s_ids))
-        togri_dict = dict(cursor.fetchall())
-
-        tahlil = []
-        for s in paketi:
-            sid = s["savol_id"]
-            tahlil.append({
-                "savol_matni": s["savol_matni"],
-                "variantlar": s["variantlar"],
-                "tanlagan_javobi": javoblar.get(str(sid), "Belgilanmagan"),
-                "haqiqiy_togri_javob": togri_dict.get(sid)
-            })
-
-        return {"holat": "Muvaffaqiyatli", "test_nomi": row[4], "ball": row[2], "tahlil": tahlil}
-    finally:
-        conn.close()
-
-# ==========================================
-# 3. O'QITUVCHI UCHUN SAVOLLARNI YUKLASH (3 XIL USUL)
-# ==========================================
-# 1-usul: Bittalab qo'lda qo'shish
+# 3. Savollarni yuklash (3 xil usul)
 @app.post("/api/test/savol_qoshish")
 async def add_single_question(data: BittalikSavol):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("""
+        cursor.execute(f"""
             INSERT INTO savollar (test_id, savol_matni, rasm_url, variant_a, variant_b, variant_c, variant_d, togri_javob)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH})
         """, (data.test_id, data.savol_matni.strip(), data.rasm_url, data.variant_a.strip(), data.variant_b.strip(), data.variant_c.strip(), data.variant_d.strip(), data.togri_javob.strip().upper()))
         conn.commit()
         return {"holat": "Muvaffaqiyatli", "xabar": "Savol qo‘shildi!"}
     finally:
         conn.close()
 
-# 2-usul: Matndan nusxa olib qo'yish (Parser)
 @app.post("/api/test/savollar_matn_yuklash")
 async def upload_text_questions(test_id: int = Form(...), matn: str = Form(...)):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        # Regex orqali savol, variantlar va to'g'ri javobni ajratish
         pattern = re.compile(
             r"(?:(\d+)[\.\)]\s*)?(.*?)\n[AАaа][\.\)]\s*(.*?)\n[BВbв][\.\)]\s*(.*?)\n[CСcс][\.\)]\s*(.*?)\n[DДdд][\.\)]\s*(.*?)\n(?:Javob|J|To'g'ri javob|Ответ):\s*([A-Da-dА-Яа-я])",
             re.DOTALL | re.IGNORECASE
         )
-
         matches = pattern.findall(matn.strip() + "\n")
         qoshildi = 0
-
         for m in matches:
             _, s_matn, va, vb, vc, vd, togri = m
             togri_harf = togri.strip().upper()
@@ -556,18 +500,16 @@ async def upload_text_questions(test_id: int = Form(...), matn: str = Form(...))
             if togri_harf in ['В']: togri_harf = 'B'
             if togri_harf in ['С']: togri_harf = 'C'
 
-            cursor.execute("""
+            cursor.execute(f"""
                 INSERT INTO savollar (test_id, savol_matni, variant_a, variant_b, variant_c, variant_d, togri_javob)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH})
             """, (test_id, s_matn.strip(), va.strip(), vb.strip(), vc.strip(), vd.strip(), togri_harf))
             qoshildi += 1
-
         conn.commit()
-        return {"holat": "Muvaffaqiyatli", "xabar": f"✅ {qoshildi} ta savol muvaffaqiyatli ajratib olindi va bazaga saqlandi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": f"✅ {qoshildi} ta savol muvaffaqiyatli saqlandi!"}
     finally:
         conn.close()
 
-# 3-usul: Excel fayldan ommaviy yuklash
 @app.post("/api/test/savollar_excel_yuklash")
 async def upload_excel_questions(test_id: int = Form(...), fayl: UploadFile = File(...)):
     conn = get_db()
@@ -585,27 +527,20 @@ async def upload_excel_questions(test_id: int = Form(...), fayl: UploadFile = Fi
         qoshildi = 0
         for _, row in df.iterrows():
             if pd.isna(row["savol"]): continue
-            cursor.execute("""
+            cursor.execute(f"""
                 INSERT INTO savollar (test_id, savol_matni, variant_a, variant_b, variant_c, variant_d, togri_javob)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH})
             """, (test_id, str(row["savol"]).strip(), str(row["a"]).strip(), str(row["b"]).strip(), str(row["c"]).strip(), str(row["d"]).strip(), str(row["javob"]).strip().upper()))
             qoshildi += 1
 
         conn.commit()
-        return {"holat": "Muvaffaqiyatli", "xabar": f"✅ Exceldan {qoshildi} ta savol bazaga yuklandi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": f"✅ Exceldan {qoshildi} ta savol yuklandi!"}
     finally:
         conn.close()
 
-# ==========================================
-# 4. TO'LOV VA CHEK YUKLASH (OYLIK OLIMPIADA)
-# ==========================================
+# 4. To'lovlar
 @app.post("/api/tolov/chek_yuklash")
-async def upload_payment_receipt(
-    oquvchi_id: int = Form(...),
-    test_id: int = Form(...),
-    summa: int = Form(10000),
-    chek: UploadFile = File(...)
-):
+async def upload_payment_receipt(oquvchi_id: int = Form(...), test_id: int = Form(...), summa: int = Form(10000), chek: UploadFile = File(...)):
     conn = get_db()
     cursor = conn.cursor()
     try:
@@ -617,13 +552,12 @@ async def upload_payment_receipt(
             shutil.copyfileobj(chek.file, buffer)
 
         db_url = f"/static/uploads/{yangi_nom}"
-        cursor.execute("""
+        cursor.execute(f"""
             INSERT INTO tolovlar (oquvchi_id, test_id, chek_rasm, summa, holat)
-            VALUES (?, ?, ?, ?, 'kutilmoqda')
+            VALUES ({PH}, {PH}, {PH}, {PH}, 'kutilmoqda')
         """, (oquvchi_id, test_id, db_url, summa))
         conn.commit()
-
-        return {"holat": "Muvaffaqiyatli", "xabar": "To‘lov chekingiz qabul qilindi. Tez orada admin tomonidan tasdiqlanadi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "To‘lov cheki qabul qilindi!"}
     finally:
         conn.close()
 
@@ -653,37 +587,68 @@ async def approve_payment(tolov_id: int, holat: str = "tasdiqlandi"):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("UPDATE tolovlar SET holat = ? WHERE id = ?", (holat, tolov_id))
+        cursor.execute(f"UPDATE tolovlar SET holat = {PH} WHERE id = {PH}", (holat, tolov_id))
         conn.commit()
         return {"holat": "Muvaffaqiyatli", "xabar": f"To‘lov holati '{holat}' ga o‘zgartirildi!"}
     finally:
         conn.close()
 
-# ==========================================
-# 5. SUPER ADMIN VA NATIJALAR BO'LIMI
-# ==========================================
+# 5. Super Admin boshqaruvi
 @app.post("/api/admin/login")
 async def admin_login(data: LoginUniversal):
     kirgan_login = (data.login or data.username or "").strip()
     kirgan_parol = (data.parol or data.password or "").strip()
-
     if kirgan_login == "admin" and kirgan_parol == "admin2026":
         return {"holat": "Muvaffaqiyatli", "token": "super_admin_2026"}
-    return JSONResponse(status_code=401, content={"xatolik": "Super Admin login yoki paroli xato!"})
+    return JSONResponse(status_code=401, content={"xatolik": "Login yoki parol xato!"})
+
+@app.post("/api/admin/imtihon_qoshish")
+async def add_exam(data: YangiImtihon):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"""
+            INSERT INTO imtihonlar (nomi, fan, sinf, boshlanish_vaqti, manzil, faol)
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, 1)
+        """, (data.nomi.strip(), data.fan.strip(), data.sinf.strip(), data.boshlanish_vaqti.strip(), data.manzil.strip()))
+        conn.commit()
+        return {"holat": "Muvaffaqiyatli", "xabar": "Imtihon e'lon qilindi!"}
+    finally:
+        conn.close()
+
+@app.get("/api/admin/imtihonlar")
+async def list_exams():
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, nomi, fan, sinf, boshlanish_vaqti, manzil, faol FROM imtihonlar ORDER BY id DESC")
+        rows = cursor.fetchall()
+        return [{"id": r[0], "nomi": r[1], "fan": r[2], "sinf": r[3], "boshlanish_vaqti": r[4], "manzil": r[5], "faol": r[6]} for r in rows]
+    finally:
+        conn.close()
+
+@app.delete("/api/admin/imtihon_ochirish/{iid}")
+async def delete_exam(iid: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DELETE FROM imtihonlar WHERE id = {PH}", (iid,))
+        conn.commit()
+        return {"holat": "Muvaffaqiyatli", "xabar": "Imtihon o‘chirildi!"}
+    finally:
+        conn.close()
 
 @app.post("/api/admin/oqituvchi_qoshish")
 async def admin_add_teacher(data: YangiOqituvchi):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("""
+        cursor.execute(f"""
             INSERT INTO oqituvchilar (fio, login, parol, fan, telefon)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH})
         """, (data.fio.strip(), data.login.strip(), data.parol.strip(), data.fan.strip(), data.telefon.strip()))
         conn.commit()
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi muvaffaqiyatli biriktirildi!"}
-    except Exception as e:
-        return JSONResponse(status_code=400, content={"xatolik": "Bu login bilan o‘qituvchi mavjud yoki boshqa xatolik!"})
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi saqlandi!"}
     finally:
         conn.close()
 
@@ -703,55 +668,9 @@ async def delete_teacher(tid: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM oqituvchilar WHERE id = ?", (tid,))
+        cursor.execute(f"DELETE FROM oqituvchilar WHERE id = {PH}", (tid,))
         conn.commit()
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi tizimdan o‘chirildi!"}
-    finally:
-        conn.close()
-
-@app.post("/api/admin/parol_yangilash")
-async def admin_parol_yangilash(data: ParolOzgartirish):
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        if len(data.yangi_parol.strip()) < 4:
-            return JSONResponse(status_code=400, content={"xatolik": "Parol kamida 4 ta belgidan iborat bo‘lsin!"})
-
-        if data.turi == 'oqituvchi':
-            cursor.execute("UPDATE oqituvchilar SET parol = ? WHERE id = ?", (data.yangi_parol.strip(), data.id))
-        else:
-            cursor.execute("UPDATE oquvchilar SET parol = ? WHERE id = ?", (data.yangi_parol.strip(), data.id))
-        conn.commit()
-        return {"holat": "Muvaffaqiyatli", "xabar": "Yangi parol o‘rnatildi!"}
-    finally:
-        conn.close()
-
-@app.put("/api/admin/oquvchi_tahrirlash")
-async def admin_edit_student(data: OquvchiTahrirlash):
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("""
-            UPDATE oquvchilar 
-            SET fio = ?, telefon = ?, sinf = ?, maktab = ?, viloyat = ?
-            WHERE id = ?
-        """, (data.fio.strip(), data.telefon.strip(), data.sinf, data.maktab.strip(), data.viloyat.strip(), data.id))
-        conn.commit()
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi ma'lumotlari yangilandi!"}
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"xatolik": str(e)})
-    finally:
-        conn.close()
-
-@app.delete("/api/admin/oquvchi_ochirish/{oid}")
-async def delete_student(oid: int):
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("DELETE FROM natijalar WHERE oquvchi_id = ?", (oid,))
-        cursor.execute("DELETE FROM oquvchilar WHERE id = ?", (oid,))
-        conn.commit()
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi butunlay o‘chirildi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi o‘chirildi!"}
     finally:
         conn.close()
 
@@ -766,15 +685,21 @@ async def list_students():
     finally:
         conn.close()
 
-# Leaderboard (Peshqadamlar)
+@app.delete("/api/admin/oquvchi_ochirish/{oid}")
+async def delete_student(oid: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DELETE FROM natijalar WHERE oquvchi_id = {PH}", (oid,))
+        cursor.execute(f"DELETE FROM oquvchilar WHERE id = {PH}", (oid,))
+        conn.commit()
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi o‘chirildi!"}
+    finally:
+        conn.close()
+
+# 6. Leaderboard va O'qituvchi login
 @app.get("/api/reyting")
-async def get_leaderboard(
-    fan: Optional[str] = "Informatika",
-    bosqich_turi: Optional[str] = "haftalik",
-    oy_nomi: Optional[str] = "Oktyabr",
-    hafta_raqami: Optional[int] = 1,
-    sinf: Optional[str] = "barchasi"
-):
+async def get_leaderboard(fan: Optional[str] = "Informatika", bosqich_turi: Optional[str] = "haftalik", oy_nomi: Optional[str] = "Oktyabr", hafta_raqami: Optional[int] = 1, sinf: Optional[str] = "barchasi"):
     conn = get_db()
     cursor = conn.cursor()
     try:
@@ -782,47 +707,37 @@ async def get_leaderboard(
         oy_nomi_toza = str(oy_nomi).strip().capitalize() if oy_nomi else "Oktyabr"
         fan_toza = str(fan).strip().capitalize() if fan else "Informatika"
 
-        sql = """
+        sql = f"""
             SELECT o.id, o.fio, o.sinf, o.maktab, o.viloyat, n.ball, n.jami_savol, n.sarflangan_soniya
             FROM natijalar n
             JOIN oquvchilar o ON n.oquvchi_id = o.id
-            WHERE n.fan = ? AND n.bosqich_turi = ? AND n.oy_nomi = ?
+            WHERE n.fan = {PH} AND n.bosqich_turi = {PH} AND n.oy_nomi = {PH}
         """
         params = [fan_toza, b_tur, oy_nomi_toza]
 
         if b_tur == "haftalik":
-            sql += " AND n.hafta_raqami = ?"
+            sql += f" AND n.hafta_raqami = {PH}"
             params.append(int(hafta_raqami or 1))
 
         if sinf and sinf != "barchasi" and sinf.isdigit():
-            sql += " AND CAST(o.sinf AS INTEGER) = ?"
+            sql += f" AND CAST(o.sinf AS INTEGER) = {PH}"
             params.append(int(sinf))
 
-        # Ball bo'yicha kamayish, teng bo'lsa sarflangan soniya bo'yicha o'sish tartibida saralash
         sql += " ORDER BY n.ball DESC, n.sarflangan_soniya ASC, o.fio ASC"
-
         cursor.execute(sql, tuple(params))
         rows = cursor.fetchall()
 
         natijalar = []
         for index, r in enumerate(rows, start=1):
             natijalar.append({
-                "orin": index,
-                "oquvchi_id": r[0],
-                "fio": r[1],
-                "sinf": r[2],
-                "maktab": r[3],
-                "viloyat": r[4],
-                "ball": r[5],
-                "jami_savol": r[6],
-                "sarflangan_soniya": r[7]
+                "orin": index, "oquvchi_id": r[0], "fio": r[1],
+                "sinf": r[2], "maktab": r[3], "viloyat": r[4],
+                "ball": r[5], "jami_savol": r[6], "sarflangan_soniya": r[7]
             })
-
         return {"holat": "Muvaffaqiyatli", "reyting": natijalar}
     finally:
         conn.close()
 
-# O'qituvchi login
 @app.post("/api/oqituvchi/login")
 async def login_teacher(data: LoginUniversal):
     conn = get_db()
@@ -830,12 +745,11 @@ async def login_teacher(data: LoginUniversal):
     try:
         kirgan_login = (data.login or data.username or data.telefon or "").strip()
         kirgan_parol = (data.parol or data.password or "").strip()
-
-        cursor.execute("SELECT id, fio, fan FROM oqituvchilar WHERE login = ? AND parol = ?", (kirgan_login, kirgan_parol))
+        cursor.execute(f"SELECT id, fio, fan FROM oqituvchilar WHERE login = {PH} AND parol = {PH}", (kirgan_login, kirgan_parol))
         t = cursor.fetchone()
         if t:
             return {"holat": "Muvaffaqiyatli", "oqituvchi": {"id": t[0], "fio": t[1], "fan": t[2]}}
-        return JSONResponse(status_code=401, content={"xatolik": "O‘qituvchi logini yoki paroli noto‘g‘ri!"})
+        return JSONResponse(status_code=401, content={"xatolik": "Login yoki parol noto‘g‘ri!"})
     finally:
         conn.close()
 
