@@ -26,12 +26,12 @@
 
     <div class="card">
         <h1>Shaxsiy Kabinetga Kirish</h1>
-        <p class="subtitle">Natijalaringiz va o‘sish grafigingizni ko‘rish uchun kiring</p>
+        <p class="subtitle">Natijalaringiz va testlarni ko‘rish uchun kiring</p>
 
         <form id="loginForm">
             <div class="input-group">
                 <label>Telefon raqam:</label>
-                <input type="tel" id="telefon" placeholder="+998913080637" required>
+                <input type="tel" id="telefon" placeholder="+998901234567" required>
             </div>
             <div class="input-group">
                 <label>Parol:</label>
@@ -43,7 +43,7 @@
 
         <div class="forgot-hint">
             💡 <strong>Parolni unutdingizmi?</strong><br>
-            Informatika fani o‘qituvchingizga murojaat qiling, parolingizni bir zumda tiklab beradi.
+            O‘qituvchingizga murojaat qiling, parolingizni tiklab beradi.
         </div>
 
         <div class="bottom-link">
@@ -65,14 +65,15 @@
                 });
                 const data = await res.json();
 
-                if (res.ok) {
-                    localStorage.setItem("oquvchi_id", data.oquvchi.id);
+                if (res.ok && data.oquvchi) {
+                    // Kabinet tekshiradigan formatda ma'lumotlarni saqlaymiz:
+                    sessionStorage.setItem("user_info", JSON.stringify(data.oquvchi));
                     window.location.href = "/kabinet";
                 } else {
-                    alert("❌ " + (data.xatolik || "Telefon yoki parol noto'g'ri!"));
+                    alert("❌ " + (data.xatolik || "Telefon yoki parol noto‘g‘ri!"));
                 }
             } catch(err) {
-                alert("❌ Server bilan bog'lanishda xatolik!");
+                alert("❌ Server bilan bog‘lanishda xatolik!");
             }
         };
     </script>
