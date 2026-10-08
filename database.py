@@ -52,7 +52,7 @@ def init_db():
         )
     """)
 
-    # 3. Natijalar jadvali
+    # 3. Natijalar jadvali (avvalgi arxiv va Excel natijalari uchun)
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS natijalar (
             id {auto_id},
@@ -72,7 +72,7 @@ def init_db():
         )
     """)
 
-    # 4. Imtihonlar jadvali
+    # 4. Imtihonlar jadvali (oflayn e'lonlar uchun)
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS imtihonlar (
             id {auto_id},
@@ -86,9 +86,78 @@ def init_db():
         )
     """)
 
+    # 5. YANGI: Onlayn Testlar jadvali (kunlik, haftalik, oylik)
+    cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS testlar (
+            id {auto_id},
+            nomi TEXT NOT NULL,
+            fan TEXT NOT NULL,
+            sinf INTEGER NOT NULL,
+            turi TEXT NOT NULL,
+            davomiyligi_daqiqa INTEGER DEFAULT 30,
+            narxi INTEGER DEFAULT 0,
+            boshlanish_vaqti TIMESTAMP,
+            tugash_vaqti TIMESTAMP,
+            javoblar_ochiq INTEGER DEFAULT 0,
+            yaratuvchi_id INTEGER,
+            faol INTEGER DEFAULT 1,
+            yaratilgan_vaqt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # 6. YANGI: Savollar banki (100 talik baza)
+    cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS savollar (
+            id {auto_id},
+            test_id INTEGER NOT NULL,
+            savol_matni TEXT NOT NULL,
+            rasm_url TEXT,
+            variant_a TEXT NOT NULL,
+            variant_b TEXT NOT NULL,
+            variant_c TEXT NOT NULL,
+            variant_d TEXT NOT NULL,
+            togri_javob TEXT NOT NULL,
+            FOREIGN KEY (test_id) REFERENCES testlar (id) ON DELETE CASCADE
+        )
+    """)
+
+    # 7. YANGI: Test urinishlari (25 talik generatsiya va o'quvchi javoblari)
+    cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS test_urinishlari (
+            id {auto_id},
+            oquvchi_id INTEGER NOT NULL,
+            test_id INTEGER NOT NULL,
+            tanlangan_savollar TEXT NOT NULL,
+            berilgan_javoblar TEXT DEFAULT '{{}}',
+            ball INTEGER DEFAULT 0,
+            sarflangan_soniya INTEGER DEFAULT 0,
+            holat TEXT DEFAULT 'boshlangan',
+            boshlangan_vaqt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            tugatilgan_vaqt TIMESTAMP,
+            FOREIGN KEY (oquvchi_id) REFERENCES oquvchilar (id),
+            FOREIGN KEY (test_id) REFERENCES testlar (id)
+        )
+    """)
+
+    # 8. YANGI: To'lovlar va cheklar jadvali (1-usul: Chek yuklash)
+    cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS tolovlar (
+            id {auto_id},
+            oquvchi_id INTEGER NOT NULL,
+            test_id INTEGER NOT NULL,
+            chek_rasm TEXT NOT NULL,
+            summa INTEGER NOT NULL,
+            holat TEXT DEFAULT 'kutilmoqda',
+            tasdiqlagan_admin_id INTEGER,
+            yuklangan_vaqt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (oquvchi_id) REFERENCES oquvchilar (id),
+            FOREIGN KEY (test_id) REFERENCES testlar (id)
+        )
+    """)
+
     conn.commit()
     conn.close()
 
 if __name__ == "__main__":
     init_db()
-    print("Baza muvaffaqiyatli tayyorlandi!")
+    print("Baza barcha yangi jadvallar bilan muvaffaqiyatli tayyorlandi!")
