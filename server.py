@@ -256,7 +256,7 @@ async def get_student_results(oquvchi_id: int):
         cursor.close()
         conn.close()
 
-# --- 2. O'qituvchi boshqaruvi ---
+# --- 2. O'qituvchilar boshqaruvi ---
 @app.post("/api/admin/oqituvchi_qoshish")
 async def admin_add_teacher(data: YangiOqituvchi):
     conn = get_db()
@@ -274,7 +274,7 @@ async def admin_add_teacher(data: YangiOqituvchi):
             data.fio.strip(), data.login.strip(), data.parol.strip(),
             data.fan.strip(), (data.telefon or "").strip()
         ))
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi muvaffaqiyatli saqlandi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi muvaffaqiyatli biriktirildi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": f"Xatolik: {str(e)}"})
     finally:
@@ -301,7 +301,7 @@ async def delete_teacher(tid: int):
     cursor = conn.cursor()
     try:
         cursor.execute(f"DELETE FROM oqituvchilar WHERE id = {PH}", (tid,))
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi o‘chirildi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi tizimdan o‘chirildi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
@@ -424,7 +424,7 @@ async def upload_payment_receipt(oquvchi_id: int = Form(...), test_id: int = For
             INSERT INTO tolovlar (oquvchi_id, test_id, chek_rasm, summa, holat)
             VALUES ({PH}, {PH}, {PH}, {PH}, 'kutilmoqda')
         """, (oquvchi_id, test_id, db_url, summa))
-        return {"holat": "Muvaffaqiyatli", "xabar": "To‘lov cheki qabul qilindi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "To‘lov chekingiz qabul qilindi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
@@ -759,7 +759,7 @@ async def upload_excel_questions(test_id: int = Form(...), fayl: UploadFile = Fi
             """, (test_id, str(row["savol"]).strip(), str(row["a"]).strip(), str(row["b"]).strip(), str(row["c"]).strip(), str(row["d"]).strip(), str(row["javob"]).strip().upper()))
             qoshildi += 1
 
-        return {"holat": "Muvaffaqiyatli", "xabar": f"✅ Exceldan {qoshildi} ta savol yuklandi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": f"✅ Exceldan {qoshildi} ta savol muvaffaqiyatli yuklandi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
