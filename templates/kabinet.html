@@ -3,606 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O‘quvchi Shaxsiy Kabineti | Olimpiada Markazi</title>
+    <title>O‘quvchi Shaxsiy Kabineti | Qorako‘l Ziyo</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const userInfo = JSON.parse(sessionStorage.getItem("user_info") || "null");
+        if (!userInfo || !userInfo.id) {
+            window.location.href = "/login";
+        }
+        function chiqish() {
+            sessionStorage.removeItem("user_info");
+            window.location.href = "/login";
+        }
+    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        
         body { 
-            background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 50%, #faf5ff 100%);
-            color: #0f172a; 
+            background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%); 
+            color: #1e293b; 
             min-height: 100vh; 
-            padding-bottom: 60px; 
+            padding-bottom: 50px; 
         }
-        
+
         .header { 
-            background: rgba(255, 255, 255, 0.85); 
+            background: rgba(255, 255, 255, 0.95); 
             backdrop-filter: blur(12px);
             border-bottom: 1px solid #e2e8f0; 
-            padding: 14px 22px; 
+            padding: 16px 30px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            position: sticky; 
-            top: 0; 
-            z-index: 10; 
+            position: sticky;
+            top: 0;
+            z-index: 20;
         }
-        .logo { font-weight: 800; font-size: 17.5px; color: #1e3a8a; display: flex; align-items: center; gap: 8px; }
-        .nav-btns { display: flex; gap: 8px; align-items: center; }
-        
-        .btn-reyting { 
-            background: linear-gradient(135deg, #fef08a 0%, #fde047 100%); 
-            color: #854d0e; 
-            border: 1px solid #facc15; 
-            padding: 8px 15px; 
-            border-radius: 12px; 
-            font-weight: 800; 
-            font-size: 13px; 
-            text-decoration: none; 
-            display: flex; 
-            align-items: center; 
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(234, 179, 8, 0.2);
-            transition: 0.2s;
-        }
-        .btn-reyting:hover { transform: translateY(-2px); }
+        .logo { font-weight: 800; font-size: 18px; color: #4338ca; }
+        .nav-links { display: flex; align-items: center; gap: 15px; }
+        .nav-link { text-decoration: none; color: #475569; font-weight: 700; font-size: 14px; transition: 0.2s; }
+        .nav-link:hover { color: #4338ca; }
+        .btn-exit { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
 
-        .logout-btn { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
         
-        .container { max-width: 950px; margin: 24px auto; padding: 0 16px; }
-        
-        .card { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px);
-            border-radius: 20px; 
-            padding: 24px; 
-            border: 1px solid rgba(255, 255, 255, 0.8); 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04); 
-            margin-bottom: 20px; 
-        }
-        h2 { font-size: 18.5px; font-weight: 800; color: #0f172a; margin-bottom: 16px; }
-
-        /* YANGLIK: TESKARI SANOQ & IMTIHON BLOKI */
-        .countdown-card {
-            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+        .user-welcome-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
             color: white;
             border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 20px;
-            border: 1px solid #3b82f6;
-            box-shadow: 0 12px 30px rgba(30, 58, 138, 0.25);
+            padding: 28px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .user-welcome-card h1 { font-size: 22px; font-weight: 800; }
+        .user-welcome-card p { opacity: 0.9; font-size: 14px; margin-top: 5px; }
+
+        .filter-bar {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .filter-bar select {
+            padding: 10px 16px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .section-title { font-size: 19px; font-weight: 800; color: #1e1b4b; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+        .test-box {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            justify-content: space-between;
         }
-        .cd-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 12px; }
-        .cd-title { font-size: 17px; font-weight: 800; color: #facc15; }
-        .cd-badge { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .tb-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .tb-title { font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.4; }
         
-        .cd-body { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
-        .cd-details { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 250px; }
-        .cd-item { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #e2e8f0; }
-        .cd-item strong { color: white; font-weight: 800; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 11px; text-transform: uppercase; }
+        .badge-kunlik { background: #e0f2fe; color: #0369a1; }
+        .badge-haftalik { background: #fef3c7; color: #b45309; }
+        .badge-oylik { background: #dcfce7; color: #15803d; }
 
-        /* TIMER QUTICHALARI */
-        .timer-boxes { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .timer-unit { 
-            background: rgba(255, 255, 255, 0.1); 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            border-radius: 12px; 
-            padding: 10px 14px; 
-            text-align: center; 
-            min-width: 65px; 
-        }
-        .timer-unit h3 { font-size: 24px; font-weight: 800; color: #38bdf8; font-variant-numeric: tabular-nums; }
-        .timer-unit small { font-size: 10px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; display: block; margin-top: 2px; }
-
-        /* PROFIL BLOKI */
-        .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
-        .profile-avatar { 
-            width: 56px; 
-            height: 56px; 
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); 
-            color: white; 
-            border-radius: 18px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 26px; 
-            font-weight: 800; 
-            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.25);
-            flex-shrink: 0; 
-        }
-        .profile-name-box h3 { font-size: 20px; font-weight: 800; color: #0f172a; }
-        .profile-name-box p { font-size: 13px; color: #64748b; font-weight: 600; }
-
-        .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-        .profile-item { background: #f8fafc; padding: 14px 16px; border-radius: 14px; border: 1px solid #e2e8f0; }
-        .profile-item small { color: #64748b; font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px; }
-        .profile-item strong { font-size: 15px; color: #0f172a; font-weight: 700; }
-
-        /* STATISTIKA KARTALARI */
-        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        @media (max-width: 768px) { .summary-grid { grid-template-columns: 1fr 1fr; } }
+        .tb-info { font-size: 13px; color: #64748b; margin-bottom: 18px; display: flex; flex-direction: column; gap: 4px; }
         
-        .summary-card { 
-            background: #ffffff; 
-            border-radius: 16px; 
-            padding: 16px; 
-            text-align: center; 
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            transition: transform 0.2s;
+        .btn-action {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            display: block;
         }
-        .summary-card:hover { transform: translateY(-3px); }
-        .summary-card small { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; }
-        .summary-card h3 { font-size: 25px; font-weight: 800; color: #1e3a8a; margin-top: 6px; }
+        .btn-start { background: #4f46e5; color: white; }
+        .btn-start:hover { background: #4338ca; }
+        .btn-pay { background: #059669; color: white; }
+        .btn-pay:hover { background: #047857; }
+        .btn-locked { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        .btn-done { background: #e0e7ff; color: #4338ca; cursor: default; }
 
-        /* FILTRLAR */
-        .filter-box { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .filter-item { display: flex; flex-direction: column; gap: 5px; }
-        .filter-item label { font-size: 12px; font-weight: 700; color: #1e3a8a; }
-        .filter-item select { padding: 10px 12px; border: 1.5px solid #93c5fd; border-radius: 10px; font-size: 13px; font-weight: 700; outline: none; background: white; }
-
-        /* NATIJALAR */
-        .result-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        @media (max-width: 600px) { .result-cards { grid-template-columns: 1fr; } }
-        .stat-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 16px; text-align: center; }
-        .stat-card.active { border-color: #3b82f6; background: #eff6ff; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1); }
-        .stat-card small { font-size: 12px; font-weight: 700; color: #64748b; }
-        .stat-card h3 { font-size: 26px; font-weight: 800; color: #1e3a8a; margin-top: 6px; }
-
-        .table-responsive { width: 100%; overflow-x: auto; }
-        table.history-table { width: 100%; border-collapse: collapse; min-width: 550px; margin-top: 10px; }
-        table.history-table th, table.history-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; }
-        table.history-table th { background: #f8fafc; font-weight: 700; color: #475569; }
-        .badge-rank { background: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; }
+        /* Modal To'lov */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 460px;
+            width: 90%;
+        }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <div class="logo">🚀 Shaxsiy Kabinet</div>
-        <div class="nav-btns">
-            <a href="/reyting" class="btn-reyting">🏆 Reyting doskasi</a>
-            <button class="logout-btn" onclick="chiqish()">Chiqish 🚪</button>
+        <div class="logo">🎓 Qorako‘l Ziyo | O‘quvchi Portali</div>
+        <div class="nav-links">
+            <a href="/reyting" class="nav-link">🏆 Reyting</a>
+            <a href="/aloqa" class="nav-link">📞 Aloqa</a>
+            <button class="btn-exit" onclick="chiqish()">🚪 Chiqish</button>
         </div>
     </header>
 
     <div class="container">
 
-        <!-- TESKARI SANOQ VA IMTIHON BLOKI (Agar admin e'lon qilgan bo'lsa ko'rinadi) -->
-        <div class="countdown-card" id="countdownCard" style="display: none;">
-            <div class="cd-header">
-                <div class="cd-title" id="cdNomi">🎯 Kelgusi Rasmiy Olimpiada</div>
-                <div class="cd-badge" id="cdFanSinf">Informatika | Barcha sinflar</div>
+        <!-- FOYDALANUVCHI MA'LUMOTLARI -->
+        <div class="user-welcome-card">
+            <div>
+                <h1 id="userFio">Xush kelibsiz!</h1>
+                <p id="userMaktab">Viloyat | Maktab | Sinf</p>
             </div>
-            <div class="cd-body">
-                <div class="cd-details">
-                    <div class="cd-item">
-                        📅 Sana va vaqt: <strong id="cdSanaVaqt">-</strong>
-                    </div>
-                    <div class="cd-item">
-                        📍 Manzil: <strong id="cdManzil">-</strong>
-                    </div>
-                </div>
-
-                <!-- JONLI TAYMER -->
-                <div class="timer-boxes" id="timerBox">
-                    <div class="timer-unit">
-                        <h3 id="tKun">00</h3>
-                        <small>Kun</small>
-                    </div>
-                    <div class="timer-unit">
-                        <h3 id="tSoat">00</h3>
-                        <small>Soat</small>
-                    </div>
-                    <div class="timer-unit">
-                        <h3 id="tDaqiqa">00</h3>
-                        <small>Daqiqa</small>
-                    </div>
-                    <div class="timer-unit">
-                        <h3 id="tSoniya">00</h3>
-                        <small>Soniya</small>
-                    </div>
-                </div>
-                <div id="examStartedMsg" style="display: none; font-size: 18px; font-weight: 800; color: #4ade80;">
-                    🚀 Imtihon boshlandi! Barchaga omad tilaymiz!
-                </div>
-            </div>
-        </div>
-        
-        <!-- PROFIL -->
-        <div class="card">
-            <div class="profile-header">
-                <div class="profile-avatar" id="avatarHarf">👤</div>
-                <div class="profile-name-box">
-                    <h3 id="p_fio">Yuklanmoqda...</h3>
-                    <p>O‘quvchi Shaxsiy Hisobi</p>
-                </div>
-            </div>
-
-            <div class="profile-grid">
-                <div class="profile-item">
-                    <small>Sinf va Maktab:</small>
-                    <strong id="p_maktab">-</strong>
-                </div>
-                <div class="profile-item">
-                    <small>Hudud / Viloyat:</small>
-                    <strong id="p_viloyat">-</strong>
-                </div>
-                <div class="profile-item">
-                    <small>Hisob holati:</small>
-                    <strong style="color: #10b981;">Faol o‘quvchi 🌟</strong>
-                </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 14px;">
+                ID: #<span id="userId">-</span>
             </div>
         </div>
 
-        <!-- UMUMIY STATISTIKA -->
-        <div class="card">
-            <h2>📊 Umumiy Natijalar</h2>
-            <div class="summary-grid">
-                <div class="summary-card">
-                    <small>Sinovlar</small>
-                    <h3 id="statJamiSinov">0 ta</h3>
-                </div>
-                <div class="summary-card">
-                    <small>O‘rtacha Ball</small>
-                    <h3 id="statOrtachaBall" style="color: #2563eb;">0</h3>
-                </div>
-                <div class="summary-card">
-                    <small>Eng Yuqori</small>
-                    <h3 id="statEngYuqoriBall" style="color: #10b981;">0</h3>
-                </div>
-                <div class="summary-card">
-                    <small>Eng Yaxshi O‘rin</small>
-                    <h3 id="statEngYaxshiOrin" style="color: #f59e0b;">-</h3>
-                </div>
-            </div>
+        <!-- FAN VA SINF BO'YICHA FILTR -->
+        <div class="filter-bar">
+            <span style="font-weight: 800; font-size: 14px; color: #3730a3;">📚 Fan tanlang:</span>
+            <select id="fanFilter" onchange="yuklashTestlar()">
+                <option value="barchasi">Barcha fanlar</option>
+                <option value="Informatika">Informatika</option>
+                <option value="Matematika">Matematika</option>
+                <option value="Fizika">Fizika</option>
+                <option value="Kimyo">Kimyo</option>
+                <option value="Biologiya">Biologiya</option>
+                <option value="Tarix">Tarix</option>
+                <option value="Huquq">Huquq</option>
+                <option value="Ingliz tili">Ingliz tili</option>
+                <option value="Ona tili">Ona tili</option>
+            </select>
         </div>
 
-        <!-- SINOV NATIJALARI -->
-        <div class="card">
-            <h2>🎯 Sinov natijalari</h2>
-            <div class="filter-box">
-                <div class="filter-item">
-                    <label>Fan:</label>
-                    <select id="selFan" onchange="filtrlash()">
-                        <option value="Informatika">Informatika</option>
-    <option value="Matematika">Matematika</option>
-    <option value="Fizika">Fizika</option>
-    <option value="Kimyo">Kimyo</option>
-    <option value="Biologiya">Biologiya</option>
-    <option value="Tarix">Tarix</option>
-    <option value="Huquq">Huquq</option>
-    <option value="Ingliz tili">Ingliz tili</option>
-    <option value="Ona tili">Ona tili</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>Sinov turi:</label>
-                    <select id="selTur" onchange="almashtirTur(this.value)">
-                        <option value="haftalik">📅 Haftalik test</option>
-                        <option value="oylik">🏆 Oylik olimpiada</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>Oy:</label>
-                   <select id="selOy" onchange="filtrlash()">
-                        <option value="Sentyabr">Sentyabr</option>
-                        <option value="Oktyabr" selected>Oktyabr</option>
-                        <option value="Noyabr">Noyabr</option>
-                        <option value="Dekabr">Dekabr</option>
-                        <option value="Yanvar">Yanvar</option>
-                        <option value="Fevral">Fevral</option>
-                        <option value="Mart">Mart</option>
-                        <option value="Aprel">Aprel</option>
-                        <option value="May">May</option>
-                        <option value="Iyun">Iyun</option>
-                        <option value="Iyul">Iyul</option>
-                        <option value="Avgust">Avgust</option>
-                    </select>
-                </div>
-                <div class="filter-item" id="haftaFilterItem">
-                    <label>Hafta:</label>
-                    <select id="selHafta" onchange="filtrlash()">
-                        <option value="1">1-hafta</option>
-                        <option value="2">2-hafta</option>
-                        <option value="3">3-hafta</option>
-                        <option value="4">4-hafta</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="result-cards">
-                <div class="stat-card">
-                    <small>To‘plangan Ball</small>
-                    <h3 id="resBall">-</h3>
-                </div>
-                <div class="stat-card">
-                    <small>Maksimal Ball</small>
-                    <h3 id="resJami">-</h3>
-                </div>
-                <div class="stat-card active">
-                    <small>Egallangan O‘rin</small>
-                    <h3 id="resOrin" style="color: #2563eb;">-</h3>
-                </div>
-            </div>
-            <p id="resStatus" style="margin-top: 14px; font-size: 13px; color: #64748b; text-align: center;"></p>
+        <!-- TESTLAR RO'YXATI -->
+        <div class="section-title">⚡ Foydalanish mumkin bo‘lgan Testlar va Olimpiadalar</div>
+        <div class="tests-grid" id="testsContainer">
+            <p style="color: #64748b;">Testlar yuklanmoqda...</p>
         </div>
 
-        <!-- GRAFIK -->
-        <div class="card">
-            <h2 id="grafikSarlavha">📈 Bilim o‘sish dinamikasi</h2>
-            <div style="position: relative; height: 280px; width: 100%;">
-                <canvas id="grafik"></canvas>
-            </div>
-        </div>
-
-        <!-- TARIX -->
-        <div class="card">
-            <h2>📋 Barcha natijalar tarixi</h2>
-            <div class="table-responsive">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Fan</th>
-                            <th>Turi</th>
-                            <th>Oy</th>
-                            <th>Hafta</th>
-                            <th>Ball</th>
-                            <th>O‘rin</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tarixTableBody">
-                        <tr><td colspan="6" style="text-align: center; color: #94a3b8;">Hali natijalar mavjud emas</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- AVVALGI NATIJALAR ARXIVI -->
+        <div class="section-title">📊 Mening Avvalgi Natijalarim</div>
+        <div style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow-x: auto; padding: 15px;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 600px; font-size: 14px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #f1f5f9; text-align: left; color: #64748b;">
+                        <th style="padding: 12px;">Fan</th>
+                        <th>Bosqich</th>
+                        <th>Davr</th>
+                        <th>Ball</th>
+                        <th>O‘rin</th>
+                        <th>Sana</th>
+                    </tr>
+                </thead>
+                <tbody id="natijalarTable">
+                    <tr><td colspan="6" style="padding: 15px; text-align: center; color: #94a3b8;">Yuklanmoqda...</td></tr>
+                </tbody>
+            </table>
         </div>
 
     </div>
 
+    <!-- TO'LOV CHEKI YUKLASH MODALI -->
+    <div class="modal" id="payModal">
+        <div class="modal-box">
+            <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 10px;">💳 Olimpiada uchun to‘lov</h3>
+            <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 15px;">
+                Ushbu oylik katta olimpiadada qatnashish pullik. To‘lovni quyidagi kartaga o‘tkazib, chek rasmini yuklang:
+            </p>
+            <div style="background: #f1f5f9; padding: 12px; border-radius: 10px; font-weight: 700; color: #3730a3; margin-bottom: 15px; font-size: 14px;">
+                Karta: <b>8600 0000 0000 0000</b><br>
+                Qabul qiluvchi: Qorako‘l Ziyo Rasmiy<br>
+                Summa: <span id="modalSumma">10 000</span> so‘m
+            </div>
+            <form onsubmit="yuborishChek(event)">
+                <input type="hidden" id="modalTestId">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 12px; font-weight: 700; color: #475569;">To‘lov skrinshotini (cheki) tanlang:</label>
+                    <input type="file" id="chekFayl" accept="image/*" required style="width: 100%; margin-top: 5px;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn-action btn-pay">📤 Chekni Yuborish</button>
+                    <button type="button" class="btn-action btn-locked" onclick="yopishModal()">Bekor qilish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        let joriyOquvchiId = localStorage.getItem("oquvchi_id");
-        let butunTarix = [];
-        let chartInstance = null;
-        let countdownTimer = null;
-        const barchaOylar = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"];
-        const barchaHaftalar = ["1-hafta", "2-hafta", "3-hafta", "4-hafta"];
+        document.getElementById("userFio").innerText = `Salom, ${userInfo.fio}!`;
+        document.getElementById("userMaktab").innerText = `${userInfo.viloyat || ''} | ${userInfo.maktab || ''} | ${userInfo.sinf}-sinf`;
+        document.getElementById("userId").innerText = userInfo.id;
 
-        function chiqish() {
-            localStorage.removeItem("oquvchi_id");
-            window.location.href = "/login";
-        }
+        async function yuklashTestlar() {
+            const container = document.getElementById("testsContainer");
+            const fan = document.getElementById("fanFilter").value;
+            const fanParam = fan === "barchasi" ? "" : `&fan=${encodeURIComponent(fan)}`;
 
-        async function init() {
-            if (!joriyOquvchiId) {
-                window.location.href = "/login";
-                return;
-            }
-            await yuklashImtihonTeskariSanoq();
-            await yuklashNatijalar(joriyOquvchiId);
-        }
-
-        // TESKARI SANOQ VA IMTIHONNI YUKLASH
-        async function yuklashImtihonTeskariSanoq() {
             try {
-                const res = await fetch('/api/eng_yaqin_imtihon');
+                const res = await fetch(`/api/testlar/royxat?sinf=${userInfo.sinf}&oquvchi_id=${userInfo.id}${fanParam}`);
                 const data = await res.json();
-                if (data.mavjud) {
-                    const im = data.imtihon;
-                    document.getElementById("countdownCard").style.display = "flex";
-                    document.getElementById("cdNomi").innerText = "🎯 " + im.nomi;
-                    document.getElementById("cdFanSinf").innerText = `${im.fan} | ${im.sinf}`;
-                    document.getElementById("cdManzil").innerText = im.manzil;
+                const testlar = data.testlar || [];
 
-                    const dateObj = new Date(im.boshlanish_vaqti);
-                    const formatSana = `${dateObj.getFullYear()}-yil ${dateObj.getDate()}-${barchaOylar[dateObj.getMonth()]}, soat ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
-                    document.getElementById("cdSanaVaqt").innerText = formatSana;
-
-                    boshlashTaymer(dateObj);
-                } else {
-                    document.getElementById("countdownCard").style.display = "none";
-                }
-            } catch(e) {
-                console.error("Imtihon yuklashda xatolik:", e);
-            }
-        }
-
-        function boshlashTaymer(maqsadVaqt) {
-            if (countdownTimer) clearInterval(countdownTimer);
-
-            function yangilash() {
-                const hozir = new Date().getTime();
-                const farq = maqsadVaqt.getTime() - hozir;
-
-                if (farq <= 0) {
-                    clearInterval(countdownTimer);
-                    document.getElementById("timerBox").style.display = "none";
-                    document.getElementById("examStartedMsg").style.display = "block";
+                if (testlar.length === 0) {
+                    container.innerHTML = `<div style="grid-column: 1/-1; padding: 30px; text-align: center; color: #94a3b8; background: white; border-radius: 16px;">Hozircha sizning sinfingiz uchun testlar mavjud emas.</div>`;
                     return;
                 }
 
-                const kun = Math.floor(farq / (1000 * 60 * 60 * 24));
-                const soat = Math.floor((farq % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const daqiqa = Math.floor((farq % (1000 * 60 * 60)) / (1000 * 60));
-                const soniya = Math.floor((farq % (1000 * 60)) / 1000);
+                container.innerHTML = testlar.map(t => {
+                    let tugma = "";
 
-                document.getElementById("tKun").innerText = String(kun).padStart(2, '0');
-                document.getElementById("tSoat").innerText = String(soat).padStart(2, '0');
-                document.getElementById("tDaqiqa").innerText = String(daqiqa).padStart(2, '0');
-                document.getElementById("tSoniya").innerText = String(soniya).padStart(2, '0');
-            }
-
-            yangilash();
-            countdownTimer = setInterval(yangilash, 1000);
-        }
-
-        async function yuklashNatijalar(id) {
-            try {
-                const res = await fetch(`/api/oquvchi_natijalari/${id}`);
-                const data = await res.json();
-
-                if (res.ok) {
-                    const fio = data.oquvchi.fio;
-                    document.getElementById("p_fio").innerText = fio;
-                    document.getElementById("avatarHarf").innerText = fio ? fio.trim().charAt(0).toUpperCase() : "👤";
-                    document.getElementById("p_maktab").innerText = `${data.oquvchi.sinf}-sinf, ${data.oquvchi.maktab}`;
-                    document.getElementById("p_viloyat").innerText = data.oquvchi.viloyat || "Buxoro";
-
-                    butunTarix = (data.tarix || []).map(r => ({
-                        ...r,
-                        turi_norm: String(r.bosqich_turi).toLowerCase().includes('oylik') ? 'oylik' : 'haftalik',
-                        oy_norm: r.oy_nomi || 'Oktyabr',
-                        hafta_raqami: Number(r.hafta_raqami) || 1,
-                        ball: Number(r.ball) || 0,
-                        orin: Number(r.orin) || 1,
-                        fan: (r.fan || 'Informatika').trim()
-                    }));
-                    
-                    tolDirTarixJadvali();
-                    filtrlash();
-                } else {
-                    chiqish();
-                }
-            } catch (err) {
-                console.error("Xatolik:", err);
-            }
-        }
-
-        function almashtirTur(tur) {
-            document.getElementById("haftaFilterItem").style.display = (tur === 'oylik') ? 'none' : 'flex';
-            filtrlash();
-        }
-
-        function tolDirTarixJadvali() {
-            const tbody = document.getElementById("tarixTableBody");
-            if (!butunTarix || butunTarix.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Hali natijalar kiritilmagan</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = butunTarix.map(item => `
-                <tr>
-                    <td><strong>${item.fan}</strong></td>
-                    <td>${item.turi_norm === 'oylik' ? '🏆 Oylik' : '📅 Haftalik'}</td>
-                    <td>${item.oy_norm}</td>
-                    <td>${item.turi_norm === 'haftalik' ? item.hafta_raqami + '-hafta' : '-'}</td>
-                    <td><b style="color: #2563eb;">${item.ball}</b> / ${item.jami_savol}</td>
-                    <td><span class="badge-rank">${item.orin}-o‘rin</span></td>
-                </tr>
-            `).join('');
-        }
-
-        function filtrlash() {
-            const fan = document.getElementById("selFan").value.toLowerCase();
-            const tur = document.getElementById("selTur").value;
-            const oy = document.getElementById("selOy").value;
-            const hafta = parseInt(document.getElementById("selHafta").value) || 1;
-
-            const filtrTarix = butunTarix.filter(item => item.fan.toLowerCase() === fan && item.turi_norm === tur);
-
-            if (filtrTarix.length > 0) {
-                const jami = filtrTarix.length;
-                const ortacha = (filtrTarix.reduce((s, r) => s + r.ball, 0) / jami).toFixed(1);
-                const maxB = Math.max(...filtrTarix.map(r => r.ball));
-                const orinlar = filtrTarix.map(r => r.orin).filter(r => r > 0);
-                const bestOrin = orinlar.length > 0 ? Math.min(...orinlar) : "-";
-
-                document.getElementById("statJamiSinov").innerText = `${jami} ta`;
-                document.getElementById("statOrtachaBall").innerText = `${ortacha}`;
-                document.getElementById("statEngYuqoriBall").innerText = `${maxB}`;
-                document.getElementById("statEngYaxshiOrin").innerText = bestOrin !== "-" ? `${bestOrin}-o‘rin` : "-";
-            } else {
-                document.getElementById("statJamiSinov").innerText = "0 ta";
-                document.getElementById("statOrtachaBall").innerText = "0";
-                document.getElementById("statEngYuqoriBall").innerText = "0";
-                document.getElementById("statEngYaxshiOrin").innerText = "-";
-            }
-
-            let topilgan = null;
-            if (tur === 'haftalik') {
-                const moslar = filtrTarix.filter(r => r.oy_norm.toLowerCase() === oy.toLowerCase() && r.hafta_raqami === hafta);
-                topilgan = moslar.length > 0 ? moslar[moslar.length - 1] : null;
-            } else {
-                const moslar = filtrTarix.filter(r => r.oy_norm.toLowerCase() === oy.toLowerCase());
-                topilgan = moslar.length > 0 ? moslar[moslar.length - 1] : null;
-            }
-
-            if (topilgan) {
-                document.getElementById("resBall").innerText = `${topilgan.ball} ball`;
-                document.getElementById("resJami").innerText = `${topilgan.jami_savol} ball`;
-                document.getElementById("resOrin").innerText = `${topilgan.orin}-o‘rin`;
-                document.getElementById("resStatus").innerText = `✅ ${oy} oyi uchun natija qayd etilgan.`;
-            } else {
-                document.getElementById("resBall").innerText = "-";
-                document.getElementById("resJami").innerText = "-";
-                document.getElementById("resOrin").innerText = "-";
-                document.getElementById("resStatus").innerText = `ℹ️ Ushbu davrda hali ball kiritilmagan.`;
-            }
-
-            chizishGrafik(document.getElementById("selFan").value, tur, oy, filtrTarix);
-        }
-
-        function chizishGrafik(fan, tur, oy, filtrTarix) {
-            let labels = [];
-            let ballar = [];
-            let sarlavha = "";
-
-            if (tur === 'haftalik') {
-                sarlavha = `${fan} — ${oy} oyi haftalik dinamikasi`;
-                labels = barchaHaftalar;
-                const oylikHaftalar = filtrTarix.filter(r => r.oy_norm.toLowerCase() === oy.toLowerCase());
-                ballar = [1, 2, 3, 4].map(hRaqam => {
-                    const mos = oylikHaftalar.filter(r => r.hafta_raqami === hRaqam);
-                    return mos.length > 0 ? mos[mos.length - 1].ball : null;
-                });
-            } else {
-                sarlavha = `${fan} — Oylik olimpiadalar dinamikasi`;
-                labels = barchaOylar;
-                ballar = barchaOylar.map(oyNomi => {
-                    const mos = filtrTarix.filter(r => r.oy_norm.toLowerCase() === oyNomi.toLowerCase());
-                    return mos.length > 0 ? mos[mos.length - 1].ball : null;
-                });
-            }
-
-            document.getElementById("grafikSarlavha").innerText = "📈 " + sarlavha;
-
-            const ctx = document.getElementById('grafik').getContext('2d');
-            if (chartInstance) chartInstance.destroy();
-
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: ballar,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.12)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#1d4ed8',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        tension: 0.35,
-                        fill: true,
-                        spanGaps: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { min: 0, max: 100, ticks: { stepSize: 20 } }
+                    if (t.ishlangan) {
+                        tugma = `<div class="btn-action btn-done">✅ Ishlangan: ${t.toplagan_ball} ball</div>`;
+                    } else if (t.holat === "otkazildi") {
+                        tugma = `<div class="btn-action btn-locked">⛔ O‘tkazib yuborilgan</div>`;
+                    } else if (t.holat === "kutilmoqda") {
+                        tugma = `<div class="btn-action btn-locked">⏳ Boshlanish vaqti kutilmoqda</div>`;
+                    } else if (!t.tolangan && t.narxi > 0) {
+                        tugma = `<button onclick="ochishTolov(${t.id}, ${t.narxi})" class="btn-action btn-pay">💳 To‘lov qilish (${t.narxi} so‘m)</button>`;
+                    } else {
+                        tugma = `<a href="/test/${t.id}" class="btn-action btn-start">🚀 Testni Boshlash</a>`;
                     }
-                }
-            });
+
+                    return `
+                        <div class="test-box">
+                            <div>
+                                <div class="tb-header">
+                                    <span class="badge badge-${t.turi}">${t.turi}</span>
+                                    <span style="font-size: 13px; font-weight: 700; color: #4338ca;">${t.fan}</span>
+                                </div>
+                                <div class="tb-title">${t.nomi}</div>
+                                <div class="tb-info">
+                                    <span>⏱️ Vaqt: ${t.davomiyligi_daqiqa} daqiqa (25 ta savol)</span>
+                                    <span>💰 Narxi: ${t.narxi > 0 ? t.narxi + " so‘m" : "Bepul"}</span>
+                                </div>
+                            </div>
+                            ${tugma}
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) {
+                container.innerHTML = `<p style="color: red;">Aloqa xatosi yuz berdi!</p>`;
+            }
         }
 
-        init();
+        async function yuklashNatijalar() {
+            try {
+                const res = await fetch(`/api/oquvchi_natijalari/${userInfo.id}`);
+                const data = await res.json();
+                const tbody = document.getElementById("natijalarTable");
+
+                if (!data.tarix || data.tarix.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="padding: 15px; text-align: center; color: #94a3b8;">Hali natijalar mavjud emas</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.tarix.map(n => `
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 12px; font-weight: 700; color: #3730a3;">${n.fan}</td>
+                        <td style="text-transform: capitalize;">${n.bosqich_turi}</td>
+                        <td>${n.bosqich_turi === 'haftalik' ? n.oy_nomi + ' (' + n.hafta_raqami + '-hafta)' : n.oy_nomi}</td>
+                        <td style="font-weight: 800; color: #16a34a;">${n.ball} ball</td>
+                        <td><span style="background: #eef2ff; color: #4338ca; padding: 3px 8px; border-radius: 6px; font-weight: 700;">${n.orin}-o‘rin</span></td>
+                        <td style="color: #64748b; font-size: 12px;">${n.sana ? n.sana.slice(0, 10) : '-'}</td>
+                    </tr>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        function ochishTolov(testId, summa) {
+            document.getElementById("modalTestId").value = testId;
+            document.getElementById("modalSumma").innerText = summa;
+            document.getElementById("payModal").style.display = "flex";
+        }
+
+        function yopishModal() {
+            document.getElementById("payModal").style.display = "none";
+        }
+
+        async function yuborishChek(e) {
+            e.preventDefault();
+            const fayl = document.getElementById("chekFayl").files[0];
+            const testId = document.getElementById("modalTestId").value;
+            const summa = document.getElementById("modalSumma").innerText;
+
+            const fd = new FormData();
+            fd.append("oquvchi_id", userInfo.id);
+            fd.append("test_id", testId);
+            fd.append("summa", summa);
+            fd.append("chek", fayl);
+
+            try {
+                const res = await fetch("/api/tolov/chek_yuklash", { method: "POST", body: fd });
+                const d = await res.json();
+                alert(d.xabar);
+                yopishModal();
+                yuklashTestlar();
+            } catch(err) { alert("Xatolik yuz berdi!"); }
+        }
+
+        yuklashTestlar();
+        yuklashNatijalar();
     </script>
 </body>
 </html>
