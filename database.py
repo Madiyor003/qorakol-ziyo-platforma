@@ -6,7 +6,6 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     import psycopg2
-    from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 def get_connection():
     if DATABASE_URL:
@@ -15,7 +14,8 @@ def get_connection():
         conn.autocommit = True
         return conn
     else:
-        conn = sqlite3.connect("olimpiada.db")
+        conn = sqlite3.connect("olimpiada.db", timeout=20)
+        conn.isolation_level = None
         return conn
 
 def init_db():
@@ -25,7 +25,6 @@ def init_db():
     is_pg = bool(DATABASE_URL)
     auto_id = "SERIAL PRIMARY KEY" if is_pg else "INTEGER PRIMARY KEY AUTOINCREMENT"
 
-    # 1. O'quvchilar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS oquvchilar (
             id {auto_id},
@@ -42,7 +41,6 @@ def init_db():
         )
     """)
 
-    # 2. O'qituvchilar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS oqituvchilar (
             id {auto_id},
@@ -55,7 +53,6 @@ def init_db():
         )
     """)
 
-    # 3. Natijalar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS natijalar (
             id {auto_id},
@@ -74,7 +71,6 @@ def init_db():
         )
     """)
 
-    # 4. Imtihonlar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS imtihonlar (
             id {auto_id},
@@ -88,7 +84,6 @@ def init_db():
         )
     """)
 
-    # 5. Onlayn testlar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS testlar (
             id {auto_id},
@@ -98,8 +93,8 @@ def init_db():
             turi TEXT NOT NULL,
             davomiyligi_daqiqa INTEGER DEFAULT 30,
             narxi INTEGER DEFAULT 0,
-            boshlanish_vaqti TIMESTAMP,
-            tugash_vaqti TIMESTAMP,
+            boshlanish_vaqti TEXT,
+            tugash_vaqti TEXT,
             javoblar_ochiq INTEGER DEFAULT 0,
             yaratuvchi_id INTEGER,
             faol INTEGER DEFAULT 1,
@@ -107,7 +102,6 @@ def init_db():
         )
     """)
 
-    # 6. Savollar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS savollar (
             id {auto_id},
@@ -122,7 +116,6 @@ def init_db():
         )
     """)
 
-    # 7. Test urinishlari
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS test_urinishlari (
             id {auto_id},
@@ -138,7 +131,6 @@ def init_db():
         )
     """)
 
-    # 8. To'lovlar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS tolovlar (
             id {auto_id},
@@ -152,10 +144,9 @@ def init_db():
         )
     """)
 
-    if not is_pg:
-        conn.commit()
+    cursor.close()
     conn.close()
 
 if __name__ == "__main__":
     init_db()
-    print("Baza muvaffaqiyatli ishga tushdi!")
+    print("Baza tayyor!")
