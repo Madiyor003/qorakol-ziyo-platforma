@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O‘qituvchi Ishchi Paneli</title>
+    <title>O‘qituvchi Ishchi Paneli | Qorako‘l Ziyo</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         const ustozData = JSON.parse(sessionStorage.getItem("oqituvchi_auth") || "null");
@@ -17,8 +17,6 @@
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        /* 1-USLUB: YUMSHOQ PASTEL GRADIENT FON */
         body { 
             background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #fdf2f8 100%);
             color: #1e293b; 
@@ -27,7 +25,7 @@
         }
 
         .header { 
-            background: rgba(255, 255, 255, 0.9); 
+            background: rgba(255, 255, 255, 0.95); 
             backdrop-filter: blur(12px);
             border-bottom: 1px solid #e0e7ff; 
             padding: 16px 30px; 
@@ -40,10 +38,9 @@
         }
         .logo { font-weight: 800; font-size: 18px; color: #4338ca; }
         .nav-actions { display: flex; align-items: center; gap: 12px; }
-        .btn-admin-back { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; }
         .btn-exit { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
         
-        .container { max-width: 1050px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
         .card { 
             background: #ffffff; 
             border-radius: 20px; 
@@ -52,375 +49,331 @@
             box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.05); 
             margin-bottom: 25px; 
         }
-        h2 { font-size: 19px; font-weight: 800; color: #1e1b4b; margin-bottom: 18px; }
-        
-        .sinf-selector-bar { 
-            background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%); 
-            border: 1.5px solid #c7d2fe; 
-            border-radius: 16px; 
-            padding: 18px 24px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            gap: 15px; 
-            margin-bottom: 24px; 
-            flex-wrap: wrap; 
-        }
-        .sinf-selector-bar label { font-size: 15px; font-weight: 800; color: #3730a3; }
-        .sinf-selector-bar select { padding: 11px 20px; border: 2px solid #6366f1; border-radius: 10px; font-size: 15px; font-weight: 800; color: #3730a3; outline: none; background: white; cursor: pointer; }
+        h2 { font-size: 20px; font-weight: 800; color: #1e1b4b; margin-bottom: 18px; }
 
-        .excel-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .tab-btn { background: #f1f5f9; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; color: #475569; }
-        .tab-btn.active { background: #4f46e5; color: white; }
-        
-        .upload-section { background: #faf5ff; border: 1.5px dashed #818cf8; border-radius: 16px; padding: 25px; text-align: center; }
-        .btn-download-shablon { display: inline-block; background: #ffffff; color: #4f46e5; border: 2px solid #6366f1; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
-        .btn-download-shablon:hover { background: #4f46e5; color: white; }
+        .tabs-header { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap; }
+        .main-tab { background: #f1f5f9; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; color: #475569; transition: 0.2s; }
+        .main-tab.active { background: #4f46e5; color: white; }
 
-        .param-grid { display: flex; gap: 14px; justify-content: center; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
-        .param-item { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #3730a3; }
-        .param-item select { padding: 9px 14px; border: 1.5px solid #c7d2fe; border-radius: 8px; font-size: 13px; font-weight: 700; outline: none; background: white; }
-
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 15px; }
         .input-group { display: flex; flex-direction: column; gap: 6px; }
-        label { font-size: 13px; font-weight: 600; color: #334155; }
-        input, select { padding: 11px 13px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 14px; outline: none; }
-        button.submit-btn { background: #4f46e5; color: white; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 15px; width: 100%; transition: 0.2s; }
-        button.submit-btn:hover { background: #4338ca; }
+        label { font-size: 13px; font-weight: 700; color: #334155; }
+        input, select, textarea { padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; background: white; }
+        input:focus, select:focus, textarea:focus { border-color: #6366f1; }
         
-        .table-responsive { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 580px; }
-        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-        th { background: #f8fafc; font-weight: 700; }
-        .badge-sinf { background: #ede9fe; color: #6d28d9; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; }
+        .btn-submit { background: #4f46e5; color: white; border: none; padding: 13px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-submit:hover { background: #4338ca; }
+
+        .upload-subbox { background: #f8fafc; border: 2px dashed #c7d2fe; border-radius: 14px; padding: 25px; text-align: center; margin-top: 15px; }
+        .test-card-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .badge { padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 12px; }
+        .badge-kunlik { background: #e0f2fe; color: #0369a1; }
+        .badge-haftalik { background: #fef3c7; color: #b45309; }
+        .badge-oylik { background: #dcfce7; color: #15803d; }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <div class="logo">👩‍🏫 O‘qituvchi Paneli | <span id="ustozIsm" style="color: #4f46e5;">-</span></div>
+        <div class="logo">👨‍🏫 Ustoz Ishchi Markazi | <span id="ustozIsm" style="color: #4f46e5;">-</span></div>
         <div class="nav-actions">
-            <a href="/admin" class="btn-admin-back" id="adminBackBtn" style="display: none;">🔐 Super Adminga qaytish</a>
             <button class="btn-exit" onclick="chiqish()">🚪 Chiqish</button>
         </div>
     </header>
 
     <div class="container">
 
-        <!-- SINF TANLASH ASOSIY FILTRI -->
-        <div class="sinf-selector-bar">
-            <label>📚 Ishlayotgan sinfingizni tanlang:</label>
-            <select id="asosiySinfTanlash" onchange="sinfAlmashtirish(this.value)">
-                <option value="5" selected>5-sinf</option>
-                <option value="6">6-sinf</option>
-                <option value="7">7-sinf</option>
-                <option value="8">8-sinf</option>
-                <option value="9">9-sinf</option>
-                <option value="10">10-sinf</option>
-                <option value="11">11-sinf</option>
-                <option value="barchasi">Barcha sinflar birga</option>
-            </select>
+        <!-- ASOSIY TABLAR -->
+        <div class="tabs-header">
+            <button class="main-tab active" onclick="ochishTab('yangiTestTab', this)">➕ 1. Yangi Test Yaratish</button>
+            <button class="main-tab" onclick="ochishTab('savollarYuklashTab', this)">📥 2. Savollar Bankini To‘ldirish (3 xil usul)</button>
+            <button class="main-tab" onclick="ochishTab('testlarBoshqaruvTab', this)">📋 3. Mening Testlarim & To‘g‘ri Javoblar</button>
         </div>
 
-        <!-- 1. EXCEL ORQALI YUKLASH -->
-        <div class="card">
-            <h2>📊 Excel orqali natijalarni yuklash</h2>
-            <div class="excel-tabs">
-                <button class="tab-btn active" id="btnTabHafta" onclick="almashtirExcelTab('haftalik')">📅 Haftalik testlar</button>
-                <button class="tab-btn" id="btnTabOy" onclick="almashtirExcelTab('oylik')">🏆 Oylik olimpiada</button>
-            </div>
-
-            <!-- HAFTALIK TEST -->
-            <div class="upload-section" id="haftalikUploadBox">
-                <p style="font-size: 14px; color: #3730a3; margin-bottom: 12px; font-weight: 700;">
-                    1. <span class="shablonSinfNom">5-sinf</span> uchun Haftalik test shablonini yuklab oling:
-                </p>
-                <button type="button" onclick="yuklabOlishShablon('haftalik')" class="btn-download-shablon">
-                    📥 <span class="shablonSinfNom">5-sinf</span> Haftalik Shablonini Yuklab Olish (.xlsx)
-                </button>
-                
-                <p style="font-size: 13px; color: #64748b; margin-bottom: 14px; font-weight: 600;">
-                    2. Qaysi oy va haftaning natijasi ekanini belgilab, Excel faylni yuklang:
-                </p>
-                
-                <form onsubmit="yuklashExcelFayl(event, 'haftalik')">
-                    <div class="param-grid">
-                        <div class="param-item">
-                            Oy:
-                            <select id="haftalikYuklashOy">
-                                <option value="Sentyabr">Sentyabr</option>
-                                <option value="Oktyabr" selected>Oktyabr</option>
-                                <option value="Noyabr">Noyabr</option>
-                                <option value="Dekabr">Dekabr</option>
-                                <option value="Yanvar">Yanvar</option>
-                                <option value="Fevral">Fevral</option>
-                                <option value="Mart">Mart</option>
-                                <option value="Aprel">Aprel</option>
-                                <option value="May">May</option>
-                                <option value="Iyun">Iyun</option>
-                                <option value="Iyul">Iyul</option>
-                                <option value="Avgust">Avgust</option>
-                            </select>
-                        </div>
-                        <div class="param-item">
-                            Hafta:
-                            <select id="haftalikYuklashHafta">
-                                <option value="1" selected>1-hafta</option>
-                                <option value="2">2-hafta</option>
-                                <option value="3">3-hafta</option>
-                                <option value="4">4-hafta</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; justify-content: center; max-width: 500px; margin: 0 auto; flex-wrap: wrap;">
-                        <input type="file" id="faylHaftalik" accept=".xlsx, .xls" required style="background: white; flex: 1;">
-                        <button type="submit" style="background: #4f46e5; color: white; border: none; padding: 11px 22px; border-radius: 9px; font-weight: 700; cursor: pointer;">🚀 Yuklash</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- OYLIK OLIMPIADA -->
-            <div class="upload-section" id="oylikUploadBox" style="display: none; border-color: #059669; background: #ecfdf5;">
-                <p style="font-size: 14px; color: #065f46; margin-bottom: 12px; font-weight: 700;">
-                    1. <span class="shablonSinfNom">5-sinf</span> uchun Oylik olimpiada shablonini yuklab oling:
-                </p>
-                <button type="button" onclick="yuklabOlishShablon('oylik')" class="btn-download-shablon" style="color: #059669; border-color: #059669;">
-                    📥 <span class="shablonSinfNom">5-sinf</span> Oylik Shablonini Yuklab Olish (.xlsx)
-                </button>
-                
-                <p style="font-size: 13px; color: #64748b; margin-bottom: 14px; font-weight: 600;">
-                    2. Qaysi oy olimpiadasi ekanini belgilab, faylni yuklang:
-                </p>
-
-                <form onsubmit="yuklashExcelFayl(event, 'oylik')">
-                    <div class="param-grid">
-                        <div class="param-item">
-                            Olimpiada oyi:
-                            <select id="oylikYuklashOy">
-                                <option value="Sentyabr">Sentyabr</option>
-                                <option value="Oktyabr" selected>Oktyabr</option>
-                                <option value="Noyabr">Noyabr</option>
-                                <option value="Dekabr">Dekabr</option>
-                                <option value="Yanvar">Yanvar</option>
-                                <option value="Fevral">Fevral</option>
-                                <option value="Mart">Mart</option>
-                                <option value="Aprel">Aprel</option>
-                                <option value="May">May</option>
-                                <option value="Iyun">Iyun</option>
-                                <option value="Iyul">Iyul</option>
-                                <option value="Avgust">Avgust</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; justify-content: center; max-width: 500px; margin: 0 auto; flex-wrap: wrap;">
-                        <input type="file" id="faylOylik" accept=".xlsx, .xls" required style="background: white; flex: 1;">
-                        <button type="submit" style="background: #059669; color: white; border: none; padding: 11px 22px; border-radius: 9px; font-weight: 700; cursor: pointer;">🚀 Yuklash</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 2. YAKKA TARTIBDA KIRITISH -->
-        <div class="card">
-            <h2>📝 Yakka tartibda natija kiritish</h2>
-            <form id="natijaForm">
+        <!-- 1-TAB: YANGI TEST YARATISH -->
+        <div class="card" id="yangiTestTab">
+            <h2>📝 Yangi Onlayn Imtihon / Test Yaratish</h2>
+            <form id="yangiTestForm" onsubmit="yaratishTest(event)">
                 <div class="form-grid">
                     <div class="input-group">
-                        <label>O‘quvchi telefon raqami (Login):</label>
-                        <input type="tel" id="telefon" placeholder="+998913080637" required>
+                        <label>Imtihon / Test nomi:</label>
+                        <input type="text" id="test_nomi" placeholder="Masalan: 7-sinf Informatika Oylik Olimpiada" required>
                     </div>
                     <div class="input-group">
-                        <label>Fan nomi:</label>
-                        <input type="text" id="fan" readonly style="background: #f1f5f9; font-weight: 700;">
+                        <label>Faningiz:</label>
+                        <input type="text" id="test_fan" readonly style="background: #f1f5f9; font-weight: 700;">
                     </div>
                     <div class="input-group">
-                        <label>Sinov turi:</label>
-                        <select id="bosqich_turi" onchange="tekshirHafta(this.value)">
-                            <option value="haftalik">Haftalik test</option>
-                            <option value="oylik">Oylik olimpiada</option>
+                        <label>Qaysi sinf uchun:</label>
+                        <select id="test_sinf" required>
+                            <option value="5">5-sinf</option>
+                            <option value="6">6-sinf</option>
+                            <option value="7">7-sinf</option>
+                            <option value="8">8-sinf</option>
+                            <option value="9">9-sinf</option>
+                            <option value="10">10-sinf</option>
+                            <option value="11">11-sinf</option>
+                            <option value="0">Barcha sinflar</option>
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>Oy nomi:</label>
-                        <select id="oy_nomi" required>
-                            <option value="Sentyabr">Sentyabr</option>
-                            <option value="Oktyabr" selected>Oktyabr</option>
-                            <option value="Noyabr">Noyabr</option>
-                            <option value="Dekabr">Dekabr</option>
-                            <option value="Yanvar">Yanvar</option>
-                            <option value="Fevral">Fevral</option>
-                            <option value="Mart">Mart</option>
-                            <option value="Aprel">Aprel</option>
-                            <option value="May">May</option>
-                            <option value="Iyun">Iyun</option>
-                            <option value="Iyul">Iyul</option>
-                            <option value="Avgust">Avgust</option>
-                        </select>
-                    </div>
-                    <div class="input-group" id="haftaGroup">
-                        <label>Hafta raqami:</label>
-                        <select id="hafta_raqami">
-                            <option value="1">1-hafta</option>
-                            <option value="2">2-hafta</option>
-                            <option value="3">3-hafta</option>
-                            <option value="4">4-hafta</option>
+                        <label>Sinov davri (turi):</label>
+                        <select id="test_turi" onchange="tekshirTuri(this.value)">
+                            <option value="kunlik">Kunlik test (Xohlagan payt ishlanadi)</option>
+                            <option value="haftalik">Haftalik bellashuv (Vaqti belgilangan)</option>
+                            <option value="oylik">Oylik Katta Olimpiada (Pullik / Mukofotli)</option>
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>To‘plagan balli:</label>
-                        <input type="number" id="ball" placeholder="Masalan: 88" required min="0" max="100">
+                        <label>Vaqt (Daqiqada):</label>
+                        <input type="number" id="test_daqiqa" value="30" required min="5" max="180">
+                    </div>
+                    <div class="input-group">
+                        <label>Qatnashish narxi (so‘mda, bepul bo‘lsa 0 qoldiring):</label>
+                        <input type="number" id="test_narxi" value="0" min="0" step="1000">
+                    </div>
+                    <div class="input-group" id="boshlanishVaqtiBox">
+                        <label>Boshlanish sanasi va vaqti:</label>
+                        <input type="datetime-local" id="test_bosh_v">
+                    </div>
+                    <div class="input-group" id="tugashVaqtiBox">
+                        <label>Tugash sanasi va vaqti:</label>
+                        <input type="datetime-local" id="test_tug_v">
                     </div>
                 </div>
-                <button type="submit" class="submit-btn">💾 Natijani Saqlash</button>
+                <button type="submit" class="btn-submit">🚀 Testni E'lon Qilish</button>
             </form>
         </div>
 
-        <!-- 3. SINF RO'YXATI -->
-        <div class="card">
-            <h2>👥 <span id="jadvalSarlavha">5-sinf</span> o‘quvchilari ro‘yxati</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>F.I.O</th>
-                            <th>Telefon (Login)</th>
-                            <th>Sinfi</th>
-                            <th>Maktabi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="oquvchilarTable">
-                        <tr><td colspan="5" style="text-align: center;">Yuklanmoqda...</td></tr>
-                    </tbody>
-                </table>
+        <!-- 2-TAB: SAVOLLAR YUKLASH (3 USUL) -->
+        <div class="card" id="savollarYuklashTab" style="display: none;">
+            <h2>📥 Savollar Bankini To‘ldirish (100 tagacha savol)</h2>
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 14px; font-weight: 800;">Qaysi test uchun savol yuklamoqchisiz?</label>
+                <select id="tanlanganTestSelect" style="width: 100%; margin-top: 6px; font-weight: 700; color: #4338ca;"></select>
             </div>
+
+            <!-- USUL TANLASH TUGMALARI -->
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button type="button" class="main-tab active" id="btnUsulMatn" onclick="almashtirUsul('matn')">📋 1-Usul: Matndan nusxalash</button>
+                <button type="button" class="main-tab" id="btnUsulExcel" onclick="almashtirUsul('excel')">📊 2-Usul: Excel jadval yuklash</button>
+                <button type="button" class="main-tab" id="btnUsulYakka" onclick="almashtirUsul('yakka')">✍️ 3-Usul: Bittalab kiritish</button>
+            </div>
+
+            <!-- 1-USUL: MATN (PARSER) -->
+            <div class="upload-subbox" id="usulMatnBox">
+                <p style="font-size: 13px; color: #475569; margin-bottom: 10px; text-align: left;">
+                    Testlaringizni quyidagi formatda Word yoki Telegramdan nusxalab shu maydonga tashlang:<br>
+                    <code>1. Savol matni?<br>A) Variant 1<br>B) Variant 2<br>C) Variant 3<br>D) Variant 4<br>Javob: A</code>
+                </p>
+                <textarea id="matnTestlar" rows="10" placeholder="Savollarni shu yerga joylang..." style="width: 100%; font-family: monospace;"></textarea>
+                <button type="button" onclick="yuklashMatnSavollar()" class="btn-submit" style="margin-top: 15px;">⚡ Avtomatik Ajratib Bazaga Saqlash</button>
+            </div>
+
+            <!-- 2-USUL: EXCEL -->
+            <div class="upload-subbox" id="usulExcelBox" style="display: none;">
+                <p style="font-size: 14px; color: #3730a3; font-weight: 700; margin-bottom: 10px;">
+                    Excel fayl ustunlari tartibi: <b>savol | a | b | c | d | javob</b> bo‘lishi kerak.
+                </p>
+                <input type="file" id="faylSavollarExcel" accept=".xlsx, .xls" style="margin-bottom: 15px;">
+                <br>
+                <button type="button" onclick="yuklashExcelSavollar()" class="btn-submit">📤 Exceldan Yuklash</button>
+            </div>
+
+            <!-- 3-USUL: YAKKA KIRITISH -->
+            <div class="upload-subbox" id="usulYakkaBox" style="display: none; text-align: left;">
+                <div class="input-group" style="margin-bottom: 12px;">
+                    <label>Savol matni:</label>
+                    <textarea id="yakka_savol" rows="3" placeholder="Savolni yozing..."></textarea>
+                </div>
+                <div class="form-grid">
+                    <div class="input-group"><label>A varianti:</label><input type="text" id="yakka_a"></div>
+                    <div class="input-group"><label>B varianti:</label><input type="text" id="yakka_b"></div>
+                    <div class="input-group"><label>C varianti:</label><input type="text" id="yakka_c"></div>
+                    <div class="input-group"><label>D varianti:</label><input type="text" id="yakka_d"></div>
+                </div>
+                <div class="input-group" style="max-width: 250px; margin-bottom: 15px;">
+                    <label>To‘g‘ri javob kaliti:</label>
+                    <select id="yakka_togri">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+                <button type="button" onclick="yuklashYakkaSavol()" class="btn-submit">💾 Savolni Saqlash</button>
+            </div>
+        </div>
+
+        <!-- 3-TAB: TESTLARNI BOSHQARISH VA TO'G'RI JAVOBLAR -->
+        <div class="card" id="testlarBoshqaruvTab" style="display: none;">
+            <h2>📋 Siz Yaratgan Testlar Ro‘yxati</h2>
+            <div id="ustozTestlarRoyxati">Yuklanmoqda...</div>
         </div>
 
     </div>
 
     <script>
         document.getElementById("ustozIsm").innerText = `${ustozData.fio} (${ustozData.fan})`;
-        document.getElementById("fan").value = ustozData.fan;
+        document.getElementById("test_fan").value = ustozData.fan || "Informatika";
 
-        if (sessionStorage.getItem("admin_auth")) {
-            document.getElementById("adminBackBtn").style.display = "inline-block";
-        }
-
-        let barchaOquvchilar = [];
-
-        function yuklabOlishShablon(tur) {
-            const tanlanganSinf = document.getElementById("asosiySinfTanlash").value;
-            const fan = ustozData.fan || "Informatika";
-            window.location.href = `/api/admin/shablon/${tur}?sinf=${tanlanganSinf}&fan=${encodeURIComponent(fan)}`;
-        }
-
-        function sinfAlmashtirish(sinf) {
-            const matn = sinf === "barchasi" ? "Barcha sinflar" : `${sinf}-sinf`;
-            document.querySelectorAll(".shablonSinfNom").forEach(el => el.innerText = matn);
-            document.getElementById("jadvalSarlavha").innerText = matn;
-            chiqarishJadvalga(sinf);
-        }
-
-        function almashtirExcelTab(tur) {
-            if (tur === 'haftalik') {
-                document.getElementById("btnTabHafta").classList.add("active");
-                document.getElementById("btnTabOy").classList.remove("active");
-                document.getElementById("haftalikUploadBox").style.display = "block";
-                document.getElementById("oylikUploadBox").style.display = "none";
-            } else {
-                document.getElementById("btnTabOy").classList.add("active");
-                document.getElementById("btnTabHafta").classList.remove("active");
-                document.getElementById("oylikUploadBox").style.display = "block";
-                document.getElementById("haftalikUploadBox").style.display = "none";
+        function ochishTab(tabId, btn) {
+            document.querySelectorAll(".card").forEach(c => c.style.display = "none");
+            document.querySelectorAll(".tabs-header .main-tab").forEach(b => b.classList.remove("active"));
+            document.getElementById(tabId).style.display = "block";
+            btn.classList.add("active");
+            if (tabId === 'savollarYuklashTab' || tabId === 'testlarBoshqaruvTab') {
+                yuklashUstozTestlari();
             }
         }
 
-        function tekshirHafta(tur) {
-            document.getElementById("haftaGroup").style.display = (tur === 'oylik') ? 'none' : 'flex';
+        function almashtirUsul(usul) {
+            document.getElementById("usulMatnBox").style.display = usul === 'matn' ? 'block' : 'none';
+            document.getElementById("usulExcelBox").style.display = usul === 'excel' ? 'block' : 'none';
+            document.getElementById("usulYakkaBox").style.display = usul === 'yakka' ? 'block' : 'none';
+            document.getElementById("btnUsulMatn").className = usul === 'matn' ? 'main-tab active' : 'main-tab';
+            document.getElementById("btnUsulExcel").className = usul === 'excel' ? 'main-tab active' : 'main-tab';
+            document.getElementById("btnUsulYakka").className = usul === 'yakka' ? 'main-tab active' : 'main-tab';
         }
 
-        async function yuklashOquvchilar() {
+        async function yaratishTest(e) {
+            e.preventDefault();
+            const data = {
+                nomi: document.getElementById("test_nomi").value,
+                fan: document.getElementById("test_fan").value,
+                sinf: parseInt(document.getElementById("test_sinf").value),
+                turi: document.getElementById("test_turi").value,
+                davomiyligi_daqiqa: parseInt(document.getElementById("test_daqiqa").value),
+                narxi: parseInt(document.getElementById("test_narxi").value || 0),
+                boshlanish_vaqti: document.getElementById("test_bosh_v").value || null,
+                tugash_vaqti: document.getElementById("test_tug_v").value || null,
+                yaratuvchi_id: ustozData.id || 1
+            };
+
             try {
-                const res = await fetch('/api/admin/oquvchilar');
-                barchaOquvchilar = await res.json();
-                sinfAlmashtirish(document.getElementById("asosiySinfTanlash").value);
+                const res = await fetch("/api/admin/online_test_yaratish", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+                const javob = await res.json();
+                if (res.ok) {
+                    alert("✅ Test yaratildi! Endi 2-bo‘lim orqali unga savollar yuklashingiz mumkin.");
+                    document.getElementById("yangiTestForm").reset();
+                    document.getElementById("test_fan").value = ustozData.fan;
+                } else {
+                    alert("❌ " + (javob.xatolik || "Xatolik yuz berdi!"));
+                }
+            } catch (err) { alert("❌ Aloqa uzildi!"); }
+        }
+
+        async function yuklashUstozTestlari() {
+            try {
+                const res = await fetch(`/api/testlar/royxat?fan=${encodeURIComponent(ustozData.fan)}`);
+                const data = await res.json();
+                const testlar = data.testlar || [];
+
+                // Selectga to'ldirish
+                const select = document.getElementById("tanlanganTestSelect");
+                select.innerHTML = testlar.map(t => `<option value="${t.id}">${t.nomi} (${t.sinf}-sinf, ${t.turi})</option>`).join('');
+
+                // 3-tabga chiqarish
+                const container = document.getElementById("ustozTestlarRoyxati");
+                if (testlar.length === 0) {
+                    container.innerHTML = "<p style='color:#64748b;'>Hali hech qanday test yaratilmagan.</p>";
+                    return;
+                }
+
+                container.innerHTML = testlar.map(t => `
+                    <div class="test-card-item">
+                        <div>
+                            <span class="badge badge-${t.turi}">${t.turi.toUpperCase()}</span>
+                            <b style="font-size: 15px; margin-left: 8px;">${t.nomi}</b>
+                            <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
+                                Sinf: ${t.sinf}-sinf | Vaqt: ${t.davomiyligi_daqiqa} daq | Narxi: ${t.narxi > 0 ? t.narxi + " so‘m" : "Bepul"}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button onclick="ochishJavoblar(${t.id}, ${!t.javoblar_ochiq})" style="background: ${t.javoblar_ochiq ? '#ef4444' : '#10b981'}; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                                ${t.javoblar_ochiq ? "🔒 Javoblarni Yopish" : "🔓 To‘g‘ri Javoblarni Ochish"}
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
             } catch(e) { console.error(e); }
         }
 
-        function chiqarishJadvalga(tanlanganSinf) {
-            let saralangan = barchaOquvchilar;
-            if (tanlanganSinf !== "barchasi") {
-                saralangan = barchaOquvchilar.filter(o => String(o.sinf) === String(tanlanganSinf));
-            }
-
-            const tbody = document.getElementById("oquvchilarTable");
-            if (saralangan.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">Ushbu sinfda hali ro‘yxatdan o‘tgan o‘quvchilar mavjud emas</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = saralangan.map(o => `
-                <tr style="cursor: pointer;" onclick="document.getElementById('telefon').value = '${o.telefon}'">
-                    <td>#${o.id}</td>
-                    <td style="font-weight: 700; color: #3730a3;">${o.fio}</td>
-                    <td>${o.telefon}</td>
-                    <td><span class="badge-sinf">${o.sinf}-sinf</span></td>
-                    <td>${o.maktab}</td>
-                </tr>
-            `).join('');
+        async function ochishJavoblar(testId, ochish) {
+            try {
+                const res = await fetch(`/api/test/javoblarni_ochish/${testId}?ochish=${ochish}`, { method: 'PUT' });
+                const data = await res.json();
+                alert(data.xabar);
+                yuklashUstozTestlari();
+            } catch(e) { alert("Xatolik!"); }
         }
 
-        async function yuklashExcelFayl(e, tur) {
-            e.preventDefault();
-            const inputId = tur === 'haftalik' ? 'faylHaftalik' : 'faylOylik';
-            const fayl = document.getElementById(inputId).files[0];
-            if (!fayl) return;
+        async function yuklashMatnSavollar() {
+            const testId = document.getElementById("tanlanganTestSelect").value;
+            const matn = document.getElementById("matnTestlar").value;
+            if (!testId || !matn.trim()) return alert("Testni tanlang va matn kiriting!");
 
-            const oy = tur === 'haftalik' ? document.getElementById("haftalikYuklashOy").value : document.getElementById("oylikYuklashOy").value;
-            const hafta = tur === 'haftalik' ? document.getElementById("haftalikYuklashHafta").value : "1";
-            const fan = ustozData.fan || "Informatika";
-
-            const formData = new FormData();
-            formData.append("fayl", fayl);
-            formData.append("bosqich_turi", tur);
-            formData.append("tanlangan_oy", oy);
-            formData.append("tanlangan_hafta", hafta);
-            formData.append("tanlangan_fan", fan);
+            const fd = new FormData();
+            fd.append("test_id", testId);
+            fd.append("matn", matn);
 
             try {
-                const res = await fetch('/api/admin/excel_yuklash', { method: 'POST', body: formData });
-                const data = await res.json();
-                if (res.ok) {
-                    alert(data.xabar);
-                    document.getElementById(inputId).value = "";
-                } else { alert("❌ " + (data.xatolik || "Xatolik")); }
-            } catch(err) { alert("❌ Aloqa uzildi!"); }
+                const res = await fetch("/api/test/savollar_matn_yuklash", { method: "POST", body: fd });
+                const d = await res.json();
+                alert(d.xabar);
+                if (res.ok) document.getElementById("matnTestlar").value = "";
+            } catch(e) { alert("Xatolik!"); }
         }
 
-        document.getElementById("natijaForm").onsubmit = async function(e) {
-            e.preventDefault();
-            const formData = new FormData();
-            formData.append("telefon", document.getElementById("telefon").value);
-            formData.append("fan", document.getElementById("fan").value);
-            formData.append("bosqich_turi", document.getElementById("bosqich_turi").value);
-            formData.append("oy_nomi", document.getElementById("oy_nomi").value);
-            formData.append("hafta_raqami", document.getElementById("hafta_raqami").value);
-            formData.append("ball", document.getElementById("ball").value);
-            formData.append("jami_savol", 100);
+        async function yuklashExcelSavollar() {
+            const testId = document.getElementById("tanlanganTestSelect").value;
+            const fayl = document.getElementById("faylSavollarExcel").files[0];
+            if (!testId || !fayl) return alert("Fayl tanlang!");
+
+            const fd = new FormData();
+            fd.append("test_id", testId);
+            fd.append("fayl", fayl);
 
             try {
-                const res = await fetch('/api/natija_qoshish', { method: 'POST', body: formData });
-                const data = await res.json();
-                if (res.ok) {
-                    alert("✅ " + data.xabar);
-                    document.getElementById("ball").value = "";
-                } else { alert("❌ " + (data.xatolik || "Xatolik")); }
-            } catch(err) { alert("❌ Xatolik yuz berdi!"); }
-        };
+                const res = await fetch("/api/test/savollar_excel_yuklash", { method: "POST", body: fd });
+                const d = await res.json();
+                alert(d.xabar || d.xatolik);
+                if (res.ok) document.getElementById("faylSavollarExcel").value = "";
+            } catch(e) { alert("Xatolik!"); }
+        }
 
-        yuklashOquvchilar();
+        async function yuklashYakkaSavol() {
+            const data = {
+                test_id: parseInt(document.getElementById("tanlanganTestSelect").value),
+                savol_matni: document.getElementById("yakka_savol").value,
+                variant_a: document.getElementById("yakka_a").value,
+                variant_b: document.getElementById("yakka_b").value,
+                variant_c: document.getElementById("yakka_c").value,
+                variant_d: document.getElementById("yakka_d").value,
+                togri_javob: document.getElementById("yakka_togri").value
+            };
+
+            try {
+                const res = await fetch("/api/test/savol_qoshish", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+                const d = await res.json();
+                alert(d.xabar);
+                if (res.ok) {
+                    document.getElementById("yakka_savol").value = "";
+                    document.getElementById("yakka_a").value = "";
+                    document.getElementById("yakka_b").value = "";
+                    document.getElementById("yakka_c").value = "";
+                    document.getElementById("yakka_d").value = "";
+                }
+            } catch(e) { alert("Xatolik!"); }
+        }
     </script>
 </body>
 </html>
