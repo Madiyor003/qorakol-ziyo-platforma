@@ -134,15 +134,15 @@
         document.getElementById("regForm").addEventListener("submit", async function(e) {
             e.preventDefault();
             const payload = {
-                fio: document.getElementById("fio").value,
-                telefon: document.getElementById("telefon").value,
+                fio: document.getElementById("fio").value.trim(),
+                telefon: document.getElementById("telefon").value.trim(),
                 viloyat: document.getElementById("viloyat").value,
-                tuman: document.getElementById("tuman").value,
-                maktab: document.getElementById("maktab").value,
+                tuman: document.getElementById("tuman").value.trim(),
+                maktab: document.getElementById("maktab").value.trim(),
                 sinf: parseInt(document.getElementById("sinf").value),
-                telegram_id: document.getElementById("telegram").value,
-                email: document.getElementById("email").value,
-                parol: document.getElementById("parol").value
+                telegram_id: document.getElementById("telegram").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                parol: document.getElementById("parol").value.trim()
             };
 
             try {
@@ -153,7 +153,8 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    localStorage.setItem("oquvchi_id", data.oquvchi_id);
+                    // Kabinet talab qilgan sessiyani to'liq saqlaymiz:
+                    sessionStorage.setItem("user_info", JSON.stringify(data.oquvchi));
                     alert("Muvaffaqiyatli ro‘yxatdan o‘tdingiz!");
                     window.location.href = "/kabinet";
                 } else {
