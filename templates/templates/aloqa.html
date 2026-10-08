@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qo‘llab-quvvatlash va Aloqa | Qorako‘l Ziyo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%); 
+            color: #1e293b; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        .header { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e2e8f0; 
+            padding: 16px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .logo { font-weight: 800; font-size: 18px; color: #4338ca; text-decoration: none; }
+
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; flex: 1; }
+        
+        .card { 
+            background: white; 
+            border-radius: 24px; 
+            padding: 35px; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.05); 
+        }
+        h1 { font-size: 24px; font-weight: 800; color: #1e1b4b; margin-bottom: 12px; }
+        p { color: #64748b; font-size: 15px; line-height: 1.6; margin-bottom: 25px; }
+
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 30px; }
+        @media (max-width: 600px) { .contact-grid { grid-template-columns: 1fr; } }
+
+        .contact-item {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: inherit;
+            transition: 0.2s;
+        }
+        .contact-item:hover { border-color: #6366f1; transform: translateY(-2px); }
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .faq-item {
+            border-top: 1px solid #f1f5f9;
+            padding: 16px 0;
+        }
+        .faq-title { font-weight: 700; font-size: 15px; color: #334155; margin-bottom: 6px; }
+        .faq-desc { font-size: 13px; color: #64748b; line-height: 1.5; }
+        
+        .btn-back {
+            display: inline-block;
+            background: #4f46e5;
+            color: white;
+            text-decoration: none;
+            padding: 11px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="/" class="logo">🎓 Qorako‘l Ziyo</a>
+        <a href="/kabinet" style="text-decoration: none; font-weight: 700; font-size: 14px; color: #4338ca;">👤 Kabinetga qaytish</a>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h1>📞 Bog‘lanish va Yordam</h1>
+            <p>Olimpiadalar, to‘lovlar, natijalar yoki platformadan foydalanish bo‘yicha savollaringiz bo‘lsa, biz bilan to‘g‘ridan-to‘g‘ri bog‘lanishingiz mumkin.</p>
+
+            <div class="contact-grid">
+                <a href="https://t.me/qorakolziyo_admin" target="_blank" class="contact-item">
+                    <div class="icon-box" style="background: #e0f2fe; color: #0284c7;">✈️</div>
+                    <div>
+                        <div style="font-weight: 800; font-size: 15px;">Telegram Admin</div>
+                        <div style="font-size: 13px; color: #64748b;">@qorakolziyo_admin</div>
+                    </div>
+                </a>
+
+                <a href="tel:+998900000000" class="contact-item">
+                    <div class="icon-box" style="background: #dcfce7; color: #16a34a;">📞</div>
+                    <div>
+                        <div style="font-weight: 800; font-size: 15px;">Ishonch telefoni</div>
+                        <div style="font-size: 13px; color: #64748b;">+998 (90) 000-00-00</div>
+                    </div>
+                </a>
+            </div>
+
+            <h2 style="font-size: 18px; font-weight: 800; color: #1e1b4b; margin-bottom: 15px;">Ko‘p beriladigan savollar (FAQ):</h2>
+
+            <div class="faq-item">
+                <div class="faq-title">1. To‘lov cheki qancha vaqtda tasdiqlanadi?</div>
+                <div class="faq-desc">To‘lov chekingiz admin tomonidan odatda 10–30 daqiqa ichida tekshirilib tasdiqlanadi. Tasdiqlangach, kabinetingizda "Testni Boshlash" tugmasi avtomatik ochiladi.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-title">2. Olimpiada mukofotlari qanday to‘lanadi?</div>
+                <div class="faq-desc">Oylik olimpiada yakunlangach, tizim 1-, 2-, 3-o‘rin g‘oliblarini aniqlaydi va admin sizning ro‘yxatdan o‘tgan telefon raqamingiz orqali bog‘lanib, mukofot mablag‘ini kartangizga o‘tkazib beradi.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-title">3. Test vaqtida internet uzilib qolsa nima bo‘ladi?</div>
+                <div class="faq-desc">Internet qayta ulangach sahifani yangilasangiz (F5), tizim siz ishlagan savollar va qolgan vaqtingizni saqlab qoladi.</div>
+            </div>
+
+            <a href="/kabinet" class="btn-back">⬅️ Shaxsiy Kabinetga Qaytish</a>
+        </div>
+    </div>
+
+</body>
+</html>
