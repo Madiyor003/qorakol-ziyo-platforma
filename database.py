@@ -6,14 +6,17 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     import psycopg2
+    from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 def get_connection():
     if DATABASE_URL:
-        # Render'dagi postgres:// prefiksini to'g'rilash
         url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-        return psycopg2.connect(url)
+        conn = psycopg2.connect(url)
+        conn.autocommit = True
+        return conn
     else:
-        return sqlite3.connect("olimpiada.db")
+        conn = sqlite3.connect("olimpiada.db")
+        return conn
 
 def init_db():
     conn = get_connection()
@@ -52,7 +55,7 @@ def init_db():
         )
     """)
 
-    # 3. Natijalar jadvali (avvalgi arxiv va Excel natijalari uchun)
+    # 3. Natijalar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS natijalar (
             id {auto_id},
@@ -67,12 +70,11 @@ def init_db():
             jami_savol INTEGER DEFAULT 100,
             sarflangan_soniya INTEGER DEFAULT 0,
             orin INTEGER DEFAULT 0,
-            sana TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (oquvchi_id) REFERENCES oquvchilar (id)
+            sana TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
-    # 4. Imtihonlar jadvali (oflayn e'lonlar uchun)
+    # 4. Imtihonlar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS imtihonlar (
             id {auto_id},
@@ -86,7 +88,7 @@ def init_db():
         )
     """)
 
-    # 5. YANGI: Onlayn Testlar jadvali (kunlik, haftalik, oylik)
+    # 5. Onlayn testlar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS testlar (
             id {auto_id},
@@ -105,7 +107,7 @@ def init_db():
         )
     """)
 
-    # 6. YANGI: Savollar banki (100 talik baza)
+    # 6. Savollar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS savollar (
             id {auto_id},
@@ -116,12 +118,11 @@ def init_db():
             variant_b TEXT NOT NULL,
             variant_c TEXT NOT NULL,
             variant_d TEXT NOT NULL,
-            togri_javob TEXT NOT NULL,
-            FOREIGN KEY (test_id) REFERENCES testlar (id) ON DELETE CASCADE
+            togri_javob TEXT NOT NULL
         )
     """)
 
-    # 7. YANGI: Test urinishlari (25 talik generatsiya va o'quvchi javoblari)
+    # 7. Test urinishlari
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS test_urinishlari (
             id {auto_id},
@@ -133,13 +134,11 @@ def init_db():
             sarflangan_soniya INTEGER DEFAULT 0,
             holat TEXT DEFAULT 'boshlangan',
             boshlangan_vaqt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            tugatilgan_vaqt TIMESTAMP,
-            FOREIGN KEY (oquvchi_id) REFERENCES oquvchilar (id),
-            FOREIGN KEY (test_id) REFERENCES testlar (id)
+            tugatilgan_vaqt TIMESTAMP
         )
     """)
 
-    # 8. YANGI: To'lovlar va cheklar jadvali (1-usul: Chek yuklash)
+    # 8. To'lovlar jadvali
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS tolovlar (
             id {auto_id},
@@ -149,15 +148,14 @@ def init_db():
             summa INTEGER NOT NULL,
             holat TEXT DEFAULT 'kutilmoqda',
             tasdiqlagan_admin_id INTEGER,
-            yuklangan_vaqt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (oquvchi_id) REFERENCES oquvchilar (id),
-            FOREIGN KEY (test_id) REFERENCES testlar (id)
+            yuklangan_vaqt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
-    conn.commit()
+    if not is_pg:
+        conn.commit()
     conn.close()
 
 if __name__ == "__main__":
     init_db()
-    print("Baza barcha yangi jadvallar bilan muvaffaqiyatli tayyorlandi!")
+    print("Baza muvaffaqiyatli ishga tushdi!")
