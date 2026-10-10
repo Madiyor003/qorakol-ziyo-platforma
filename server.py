@@ -1022,6 +1022,13 @@ async def get_student_test_review(test_id: int, oquvchi_id: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
+        # 1. Testda to'g'ri javoblar o'qituvchi tomonidan ochilganligini qat'iy tekshirish
+        cursor.execute(f"SELECT javoblar_ochiq FROM testlar WHERE id = {PH}", (test_id,))
+        t_row = cursor.fetchone()
+        if not t_row or not t_row[0]:
+            return JSONResponse(status_code=403, content={"xatolik": "O‘qituvchi hali to‘g‘ri javoblar tahlilini ochmagan!"})
+
+        # 2. O'quvchining oxirgi urinishini olish
         cursor.execute(f"""
             SELECT tanlangan_savollar, berilgan_javoblar, ball 
             FROM test_urinishlari 
@@ -1037,26 +1044,41 @@ async def get_student_test_review(test_id: int, oquvchi_id: int):
         paketi = json.loads(paketi_raw) if paketi_raw else []
         javoblar = json.loads(javoblar_raw) if javoblar_raw else {}
 
+        # 3. Savollarning barcha variantlari va to'g'ri javoblarini olish
         savol_ids = [s.get("savol_id") for s in paketi if isinstance(s, dict) and "savol_id" in s]
-        togri_dict = {}
+        savollar_baza = {}
         if savol_ids:
             placeholders = ",".join(PH for _ in savol_ids)
-            cursor.execute(f"SELECT id, togri_javob FROM savollar WHERE id IN ({placeholders})", tuple(savol_ids))
+            cursor.execute(f"""
+                SELECT id, savol_matni, variant_a, variant_b, variant_c, variant_d, togri_javob 
+                FROM savollar WHERE id IN ({placeholders})
+            """, tuple(savol_ids))
             for r in cursor.fetchall():
-                togri_dict[r[0]] = str(r[1]).strip().upper()
+                savollar_baza[r[0]] = {
+                    "matn": r[1],
+                    "A": r[2], "B": r[3], "C": r[4], "D": r[5],
+                    "togri": str(r[6]).strip().upper()
+                }
 
         natija_savollar = []
         for s in paketi:
             sid = s.get("savol_id")
-            belgilangan = str(javoblar.get(str(sid), "")).strip().upper()
-            haqiqiy = str(togri_dict.get(sid, "")).strip().upper()
-            
+            baza_s = savollar_baza.get(sid, {})
+            belgilangan_harf = str(javoblar.get(str(sid), "")).strip().upper()
+            togri_harf = baza_s.get("togri", "")
+
+            belgilangan_matn = baza_s.get(belgilangan_harf, "")
+            togri_matn = baza_s.get(togri_harf, "")
+
+            togrimi = bool(belgilangan_harf and togri_harf and belgilangan_harf == togri_harf)
+
             natija_savollar.append({
-                "savol_matni": s.get("savol_matni", "Savol matni mavjud emas"),
-                "variantlar": s.get("variantlar", []),
-                "belgilangan": belgilangan if belgilangan else "Belgilanmagan",
-                "togri_javob": haqiqiy if haqiqiy else "Ko‘rsatilmagan",
-                "togrimi": bool(belgilangan and haqiqiy and belgilangan == haqiqiy)
+                "savol_matni": baza_s.get("matn", s.get("savol_matni", "")),
+                "belgilangan_harf": belgilangan_harf if belgilangan_harf else "Javobsiz",
+                "belgilangan_matn": belgilangan_matn,
+                "togri_harf": togri_harf,
+                "togri_matn": togri_matn,
+                "togrimi": togrimi
             })
 
         return {
