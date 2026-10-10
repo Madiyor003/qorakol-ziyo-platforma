@@ -121,7 +121,7 @@
 
     <div class="container">
 
-        <!-- 0. KUTILAYOTGAN TO'LOV CHEKLARI (YANGI BO'LIM) -->
+        <!-- 0. KUTILAYOTGAN TO'LOV CHEKLARI -->
         <div class="admin-card" style="border: 2px solid #3b82f6;">
             <div class="card-header" style="color: #60a5fa;">
                 💳 Oylik Olimpiada Uchun Yuklangan To‘lov Cheklari
@@ -301,7 +301,7 @@
     </div>
 
     <script>
-        async function yuklashHammasi() {
+        function yuklashHammasi() {
             yuklashTolovlar();
             yuklashImtihonlar();
             yuklashOqituvchilar();
@@ -309,10 +309,11 @@
         }
 
         async function yuklashTolovlar() {
+            const tbody = document.getElementById("tolovlarTable");
             try {
                 const res = await fetch("/api/admin/kutilayotgan_tolovlar");
+                if (!res.ok) throw new Error();
                 const ro'yxat = await res.json();
-                const tbody = document.getElementById("tolovlarTable");
 
                 if (!ro'yxat || ro'yxat.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Kutilayotgan to‘lov cheklari yo‘q.</td></tr>`;
@@ -334,7 +335,9 @@
                         </td>
                     </tr>
                 `).join('');
-            } catch(e) {}
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Kutilayotgan to‘lov cheklari yo‘q.</td></tr>`;
+            }
         }
 
         async function tasdiqlashChek(tolovId, holat) {
@@ -370,12 +373,12 @@
         }
 
         async function yuklashImtihonlar() {
+            const tbody = document.getElementById("imtihonlarTable");
             try {
                 const res = await fetch("/api/admin/imtihonlar");
                 const data = await res.json();
-                const tbody = document.getElementById("imtihonlarTable");
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8;">Hozircha faol imtihonlar yo‘q.</td></tr>`;
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 15px;">Hozircha faol imtihonlar yo‘q.</td></tr>`;
                     return;
                 }
                 tbody.innerHTML = data.map(i => `
@@ -387,7 +390,9 @@
                         <td><button onclick="ochirishImtihon(${i.id})" class="btn-sm-del">O‘chirish</button></td>
                     </tr>
                 `).join('');
-            } catch(e) {}
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 15px;">Hozircha faol imtihonlar yo‘q.</td></tr>`;
+            }
         }
 
         async function ochirishImtihon(id) {
@@ -423,10 +428,14 @@
         }
 
         async function yuklashOqituvchilar() {
+            const tbody = document.getElementById("oqituvchilarTable");
             try {
                 const res = await fetch("/api/admin/oqituvchilar");
                 const data = await res.json();
-                const tbody = document.getElementById("oqituvchilarTable");
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">O‘qituvchilar mavjud emas.</td></tr>`;
+                    return;
+                }
                 tbody.innerHTML = data.map(o => `
                     <tr>
                         <td>#${o.id}</td>
@@ -437,7 +446,9 @@
                         <td><button onclick="ochirishOqituvchi(${o.id})" class="btn-sm-del">O‘chirish</button></td>
                     </tr>
                 `).join('');
-            } catch(e) {}
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">O‘qituvchilar mavjud emas.</td></tr>`;
+            }
         }
 
         async function ochirishOqituvchi(id) {
@@ -447,10 +458,14 @@
         }
 
         async function yuklashOquvchilar() {
+            const tbody = document.getElementById("oquvchilarTable");
             try {
                 const res = await fetch("/api/admin/oquvchilar");
                 const data = await res.json();
-                const tbody = document.getElementById("oquvchilarTable");
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Ro‘yxatdan o‘tgan o‘quvchilar yo‘q.</td></tr>`;
+                    return;
+                }
                 tbody.innerHTML = data.map(o => `
                     <tr>
                         <td>#${o.id}</td>
@@ -461,7 +476,9 @@
                         <td><button onclick="ochirishOquvchi(${o.id})" class="btn-sm-del">O‘chirish</button></td>
                     </tr>
                 `).join('');
-            } catch(e) {}
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Ro‘yxatdan o‘tgan o‘quvchilar yo‘q.</td></tr>`;
+            }
         }
 
         async function ochirishOquvchi(id) {
