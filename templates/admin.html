@@ -5,108 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Boshqaruv Markazi | Qorako‘l Ziyo</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-        if (sessionStorage.getItem("admin_auth") !== "super_admin_2026") {
-            window.location.href = "/admin-login";
-        }
-        function chiqish() {
-            sessionStorage.removeItem("admin_auth");
-            window.location.href = "/admin-login";
-        }
-    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { 
-            background: #0f172a; 
-            color: #f8fafc; 
-            min-height: 100vh; 
-            padding-bottom: 60px; 
-        }
-
-        .header { 
-            background: rgba(15, 23, 42, 0.95); 
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #1e293b; 
-            padding: 16px 30px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: sticky;
-            top: 0;
-            z-index: 20;
-        }
+        body { background: #0f172a; color: #f8fafc; min-height: 100vh; padding-bottom: 60px; }
+        .header { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #1e293b; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; }
         .logo { font-weight: 800; font-size: 18px; color: #38bdf8; }
         .btn-exit { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
-
         .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
-
-        .admin-card { 
-            background: #1e293b; 
-            border-radius: 16px; 
-            padding: 24px; 
-            border: 1px solid #334155; 
-            margin-bottom: 25px; 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-        .card-header {
-            font-size: 17px;
-            font-weight: 800;
-            color: #f8fafc;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .admin-card { background: #1e293b; border-radius: 16px; padding: 24px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+        .card-header { font-size: 17px; font-weight: 800; color: #f8fafc; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 15px; }
         @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
-
         .input-group { display: flex; flex-direction: column; gap: 6px; }
         label { font-size: 13px; font-weight: 700; color: #94a3b8; }
-        input, select { 
-            padding: 12px 14px; 
-            border: 1.5px solid #334155; 
-            border-radius: 10px; 
-            font-size: 14px; 
-            outline: none; 
-            background: #0f172a; 
-            color: white; 
-        }
+        input, select { padding: 12px 14px; border: 1.5px solid #334155; border-radius: 10px; font-size: 14px; outline: none; background: #0f172a; color: white; }
         input:focus, select:focus { border-color: #38bdf8; }
-        
-        .btn-yellow { 
-            width: 100%;
-            background: #f59e0b; 
-            color: #0f172a; 
-            border: none; 
-            padding: 13px; 
-            border-radius: 10px; 
-            font-weight: 800; 
-            font-size: 14px; 
-            cursor: pointer; 
-            transition: 0.2s;
-        }
-        .btn-yellow:hover { background: #d97706; }
-
-        .btn-green { 
-            width: 100%;
-            background: #10b981; 
-            color: white; 
-            border: none; 
-            padding: 13px; 
-            border-radius: 10px; 
-            font-weight: 800; 
-            font-size: 14px; 
-            cursor: pointer; 
-            transition: 0.2s;
-        }
-        .btn-green:hover { background: #059669; }
-
+        .btn-yellow { width: 100%; background: #f59e0b; color: #0f172a; border: none; padding: 13px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .btn-green { width: 100%; background: #10b981; color: white; border: none; padding: 13px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; }
         .table-wrap { width: 100%; overflow-x: auto; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; min-width: 750px; font-size: 13px; }
         th { background: #0f172a; color: #94a3b8; padding: 12px 14px; text-align: left; font-weight: 700; }
         td { padding: 12px 14px; border-bottom: 1px solid #334155; }
-        
         .badge-fan { background: #1e3a8a; color: #93c5fd; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; }
         .btn-sm-del { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; }
         .btn-sm-ok { background: #065f46; color: #a7f3d0; border: 1px solid #059669; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; }
@@ -123,9 +42,7 @@
 
         <!-- 0. KUTILAYOTGAN TO'LOV CHEKLARI -->
         <div class="admin-card" style="border: 2px solid #3b82f6;">
-            <div class="card-header" style="color: #60a5fa;">
-                💳 Oylik Olimpiada Uchun Yuklangan To‘lov Cheklari
-            </div>
+            <div class="card-header" style="color: #60a5fa;">💳 Oylik Olimpiada Uchun Yuklangan To‘lov Cheklari</div>
             <div class="table-wrap">
                 <table>
                     <thead>
@@ -139,7 +56,7 @@
                         </tr>
                     </thead>
                     <tbody id="tolovlarTable">
-                        <tr><td colspan="6" style="text-align: center; color: #94a3b8;">Yuklanmoqda...</td></tr>
+                        <tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Kutilayotgan to‘lov cheklari yo‘q.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -147,13 +64,11 @@
 
         <!-- 1. KELGUSI IMTIHONNI E'LON QILISH -->
         <div class="admin-card">
-            <div class="card-header">
-                ⏳ Kelgusi Imtihonni E'lon Qilish (Teskari Sanoq & Manzil)
-            </div>
+            <div class="card-header">⏳ Kelgusi Imtihonni E'lon Qilish (Teskari Sanoq & Manzil)</div>
             <form onsubmit="elonQilishImtihon(event)">
                 <div class="input-group" style="margin-bottom: 14px;">
                     <label>Imtihon / Olimpiada to‘liq nomi:</label>
-                    <input type="text" id="i_nomi" placeholder="Masalan: Kimyo fani bo‘yicha viloyat olimpiadasi saralash bosqichi" required>
+                    <input type="text" id="i_nomi" placeholder="Masalan: Informatika fani bo‘yicha viloyat olimpiadasi saralash bosqichi" required>
                 </div>
                 <div class="form-grid">
                     <div class="input-group">
@@ -164,8 +79,6 @@
                             <option value="Fizika">Fizika</option>
                             <option value="Kimyo">Kimyo</option>
                             <option value="Biologiya">Biologiya</option>
-                            <option value="Tarix">Tarix</option>
-                            <option value="Huquq">Huquq</option>
                             <option value="Ingliz tili">Ingliz tili</option>
                             <option value="Ona tili">Ona tili</option>
                         </select>
@@ -192,7 +105,7 @@
                         <input type="text" id="i_manzil" placeholder="Masalan: Buxoro shahar 41-maktab kompyuter xonasi" required>
                     </div>
                 </div>
-                <button type="submit" class="btn-yellow">📢 Imtihonni E'lon Qilish (Teskari sanoqni boshlash)</button>
+                <button type="submit" class="btn-yellow">📢 Imtihonni E'lon Qilish</button>
             </form>
 
             <div style="margin-top: 25px;">
@@ -209,7 +122,7 @@
                             </tr>
                         </thead>
                         <tbody id="imtihonlarTable">
-                            <tr><td colspan="5" style="text-align: center; color: #94a3b8;">Yuklanmoqda...</td></tr>
+                            <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 15px;">Hozircha faol imtihonlar yo‘q.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -218,14 +131,12 @@
 
         <!-- 2. YANGI O'QITUVCHI BIRIKTIRISH -->
         <div class="admin-card">
-            <div class="card-header">
-                👨‍🏫 Yangi O‘qituvchi Biriktirish (Login/Parol yaratish)
-            </div>
+            <div class="card-header">👨‍🏫 Yangi O‘qituvchi Biriktirish</div>
             <form onsubmit="biriktirishOqituvchi(event)">
                 <div class="form-grid">
                     <div class="input-group">
                         <label>O‘qituvchi F.I.O:</label>
-                        <input type="text" id="o_fio" placeholder="Masalan: Karimov Alisher" required>
+                        <input type="text" id="o_fio" placeholder="Masalan: Yozilov Madiyor" required>
                     </div>
                     <div class="input-group">
                         <label>Biriktirilgan fan:</label>
@@ -235,15 +146,13 @@
                             <option value="Fizika">Fizika</option>
                             <option value="Kimyo">Kimyo</option>
                             <option value="Biologiya">Biologiya</option>
-                            <option value="Tarix">Tarix</option>
-                            <option value="Huquq">Huquq</option>
                             <option value="Ingliz tili">Ingliz tili</option>
                             <option value="Ona tili">Ona tili</option>
                         </select>
                     </div>
                     <div class="input-group">
                         <label>Login yarating:</label>
-                        <input type="text" id="o_login" placeholder="Masalan: ustoz_kimyo" required>
+                        <input type="text" id="o_login" placeholder="Masalan: ustoz_informatika" required>
                     </div>
                     <div class="input-group">
                         <label>Parol o‘rnating:</label>
@@ -270,7 +179,7 @@
                         </tr>
                     </thead>
                     <tbody id="oqituvchilarTable">
-                        <tr><td colspan="6" style="text-align: center; color: #94a3b8;">Yuklanmoqda...</td></tr>
+                        <tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">O‘qituvchilar mavjud emas.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -292,7 +201,7 @@
                         </tr>
                     </thead>
                     <tbody id="oquvchilarTable">
-                        <tr><td colspan="6" style="text-align: center; color: #94a3b8;">Yuklanmoqda...</td></tr>
+                        <tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Ro‘yxatdan o‘tgan o‘quvchilar yo‘q.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -301,31 +210,32 @@
     </div>
 
     <script>
+        function chiqish() {
+            sessionStorage.removeItem("admin_auth");
+            window.location.href = "/admin-login";
+        }
+
         async function yuklashTolovlar() {
-            const tbody = document.getElementById("tolovlarTable");
             try {
                 const res = await fetch("/api/admin/kutilayotgan_tolovlar");
                 const royxat = await res.json();
-                if (!royxat || royxat.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Kutilayotgan to‘lov cheklari yo‘q.</td></tr>`;
-                    return;
+                const tbody = document.getElementById("tolovlarTable");
+                if (royxat && royxat.length > 0) {
+                    tbody.innerHTML = royxat.map(t => `
+                        <tr>
+                            <td style="font-weight: 700; color: #38bdf8;">${t.fio}</td>
+                            <td>${t.telefon}</td>
+                            <td>${t.test_nomi}</td>
+                            <td style="color: #34d399; font-weight: 800;">${t.summa} so‘m</td>
+                            <td><a href="${t.chek_rasm}" target="_blank" style="color: #f59e0b; text-decoration: underline; font-weight: 700;">🖼️ Chekni ochish</a></td>
+                            <td style="display: flex; gap: 8px;">
+                                <button onclick="tasdiqlashChek(${t.id}, 'tasdiqlandi')" class="btn-sm-ok">✅ Ruxsat</button>
+                                <button onclick="tasdiqlashChek(${t.id}, 'rad_etildi')" class="btn-sm-del">❌ Rad</button>
+                            </td>
+                        </tr>
+                    `).join('');
                 }
-                tbody.innerHTML = royxat.map(t => `
-                    <tr>
-                        <td style="font-weight: 700; color: #38bdf8;">${t.fio}</td>
-                        <td>${t.telefon}</td>
-                        <td>${t.test_nomi}</td>
-                        <td style="color: #34d399; font-weight: 800;">${t.summa} so‘m</td>
-                        <td><a href="${t.chek_rasm}" target="_blank" style="color: #f59e0b; text-decoration: underline; font-weight: 700;">🖼️ Chekni ochish</a></td>
-                        <td style="display: flex; gap: 8px;">
-                            <button onclick="tasdiqlashChek(${t.id}, 'tasdiqlandi')" class="btn-sm-ok">✅ Ruxsat</button>
-                            <button onclick="tasdiqlashChek(${t.id}, 'rad_etildi')" class="btn-sm-del">❌ Rad</button>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Kutilayotgan to‘lov cheklari yo‘q.</td></tr>`;
-            }
+            } catch(e) {}
         }
 
         async function tasdiqlashChek(tolovId, holat) {
@@ -361,26 +271,22 @@
         }
 
         async function yuklashImtihonlar() {
-            const tbody = document.getElementById("imtihonlarTable");
             try {
                 const res = await fetch("/api/admin/imtihonlar");
                 const data = await res.json();
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 15px;">Hozircha faol imtihonlar yo‘q.</td></tr>`;
-                    return;
+                const tbody = document.getElementById("imtihonlarTable");
+                if (data && data.length > 0) {
+                    tbody.innerHTML = data.map(i => `
+                        <tr>
+                            <td style="color: #facc15; font-weight: 700;">${i.nomi}</td>
+                            <td>${i.fan} (${i.sinf})</td>
+                            <td>${i.boshlanish_vaqti}</td>
+                            <td>📍 ${i.manzil}</td>
+                            <td><button onclick="ochirishImtihon(${i.id})" class="btn-sm-del">O‘chirish</button></td>
+                        </tr>
+                    `).join('');
                 }
-                tbody.innerHTML = data.map(i => `
-                    <tr>
-                        <td style="color: #facc15; font-weight: 700;">${i.nomi}</td>
-                        <td>${i.fan} (${i.sinf})</td>
-                        <td>${i.boshlanish_vaqti}</td>
-                        <td>📍 ${i.manzil}</td>
-                        <td><button onclick="ochirishImtihon(${i.id})" class="btn-sm-del">O‘chirish</button></td>
-                    </tr>
-                `).join('');
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 15px;">Hozircha faol imtihonlar yo‘q.</td></tr>`;
-            }
+            } catch(e) {}
         }
 
         async function ochirishImtihon(id) {
@@ -416,27 +322,23 @@
         }
 
         async function yuklashOqituvchilar() {
-            const tbody = document.getElementById("oqituvchilarTable");
             try {
                 const res = await fetch("/api/admin/oqituvchilar");
                 const data = await res.json();
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">O‘qituvchilar mavjud emas.</td></tr>`;
-                    return;
+                const tbody = document.getElementById("oqituvchilarTable");
+                if (data && data.length > 0) {
+                    tbody.innerHTML = data.map(o => `
+                        <tr>
+                            <td>#${o.id}</td>
+                            <td style="font-weight: 700;">${o.fio}</td>
+                            <td><span class="badge-fan">${o.fan}</span></td>
+                            <td>${o.login}</td>
+                            <td>${o.parol}</td>
+                            <td><button onclick="ochirishOqituvchi(${o.id})" class="btn-sm-del">O‘chirish</button></td>
+                        </tr>
+                    `).join('');
                 }
-                tbody.innerHTML = data.map(o => `
-                    <tr>
-                        <td>#${o.id}</td>
-                        <td style="font-weight: 700;">${o.fio}</td>
-                        <td><span class="badge-fan">${o.fan}</span></td>
-                        <td>${o.login}</td>
-                        <td>${o.parol}</td>
-                        <td><button onclick="ochirishOqituvchi(${o.id})" class="btn-sm-del">O‘chirish</button></td>
-                    </tr>
-                `).join('');
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">O‘qituvchilar mavjud emas.</td></tr>`;
-            }
+            } catch(e) {}
         }
 
         async function ochirishOqituvchi(id) {
@@ -446,27 +348,23 @@
         }
 
         async function yuklashOquvchilar() {
-            const tbody = document.getElementById("oquvchilarTable");
             try {
                 const res = await fetch("/api/admin/oquvchilar");
                 const data = await res.json();
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Ro‘yxatdan o‘tgan o‘quvchilar yo‘q.</td></tr>`;
-                    return;
+                const tbody = document.getElementById("oquvchilarTable");
+                if (data && data.length > 0) {
+                    tbody.innerHTML = data.map(o => `
+                        <tr>
+                            <td>#${o.id}</td>
+                            <td style="font-weight: 700; color: #38bdf8;">${o.fio}</td>
+                            <td>${o.telefon}</td>
+                            <td>${o.sinf}-sinf, ${o.maktab}</td>
+                            <td>${o.parol}</td>
+                            <td><button onclick="ochirishOquvchi(${o.id})" class="btn-sm-del">O‘chirish</button></td>
+                        </tr>
+                    `).join('');
                 }
-                tbody.innerHTML = data.map(o => `
-                    <tr>
-                        <td>#${o.id}</td>
-                        <td style="font-weight: 700;">${o.fio}</td>
-                        <td>${o.telefon}</td>
-                        <td>${o.sinf}-sinf, ${o.maktab}</td>
-                        <td>${o.parol}</td>
-                        <td><button onclick="ochirishOquvchi(${o.id})" class="btn-sm-del">O‘chirish</button></td>
-                    </tr>
-                `).join('');
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Ro‘yxatdan o‘tgan o‘quvchilar yo‘q.</td></tr>`;
-            }
+            } catch(e) {}
         }
 
         async function ochirishOquvchi(id) {
@@ -475,15 +373,11 @@
             yuklashOquvchilar();
         }
 
-        function yuklashHammasi() {
-            yuklashTolovlar();
-            yuklashImtihonlar();
-            yuklashOqituvchilar();
-            yuklashOquvchilar();
-        }
-
-        window.addEventListener("DOMContentLoaded", yuklashHammasi);
-        yuklashHammasi();
+        // Boshlanishida barchasini mustaqil chaqirish
+        yuklashTolovlar();
+        yuklashImtihonlar();
+        yuklashOqituvchilar();
+        yuklashOquvchilar();
     </script>
 </body>
 </html>
