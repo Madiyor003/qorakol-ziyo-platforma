@@ -44,7 +44,7 @@ def tozalash_telefon(tel):
         return raqamlar[-9:]
     return raqamlar
 
-# --- Pydantic Modellar (barchasi BaseModel importidan keyin tartibli) ---
+# --- Pydantic Modellar ---
 class OquvchiRoyxat(BaseModel):
     fio: str
     telefon: str
@@ -1022,45 +1022,50 @@ async def get_student_test_review(test_id: int, oquvchi_id: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute(f"SELECT javoblar_ochiq FROM testlar WHERE id = {PH}", (test_id,))
-        t_row = cursor.fetchone()
-        if not t_row or not t_row[0]:
-            return JSONResponse(status_code=403, content={"xatolik": "O‘qituvchi hali to‘g‘ri javoblarni ochiqlamagan!"})
-
         cursor.execute(f"""
             SELECT tanlangan_savollar, berilgan_javoblar, ball 
             FROM test_urinishlari 
-            WHERE test_id = {PH} AND oquvchi_id = {PH} AND holat = 'yakunlangan'
+            WHERE test_id = {PH} AND oquvchi_id = {PH}
             ORDER BY id DESC LIMIT 1
         """, (test_id, oquvchi_id))
         row = cursor.fetchone()
+        
         if not row:
-            return JSONResponse(status_code=404, content={"xatolik": "Urinish topilmadi!"})
+            return JSONResponse(status_code=404, content={"xatolik": "Siz ushbu testni hali ishlamagansiz!"})
 
-        paketi = json.loads(row[0])
-        javoblar = json.loads(row[1]) if row[1] else {}
+        paketi_raw, javoblar_raw, ball = row
+        paketi = json.loads(paketi_raw) if paketi_raw else []
+        javoblar = json.loads(javoblar_raw) if javoblar_raw else {}
 
-        savol_ids = [s["savol_id"] for s in paketi]
-        placeholders = ",".join(PH for _ in savol_ids)
-        cursor.execute(f"SELECT id, togri_javob FROM savollar WHERE id IN ({placeholders})", tuple(savol_ids))
-        togri_dict = dict(cursor.fetchall())
+        savol_ids = [s.get("savol_id") for s in paketi if isinstance(s, dict) and "savol_id" in s]
+        togri_dict = {}
+        if savol_ids:
+            placeholders = ",".join(PH for _ in savol_ids)
+            cursor.execute(f"SELECT id, togri_javob FROM savollar WHERE id IN ({placeholders})", tuple(savol_ids))
+            for r in cursor.fetchall():
+                togri_dict[r[0]] = str(r[1]).strip().upper()
 
         natija_savollar = []
         for s in paketi:
-            sid = s["savol_id"]
+            sid = s.get("savol_id")
             belgilangan = str(javoblar.get(str(sid), "")).strip().upper()
             haqiqiy = str(togri_dict.get(sid, "")).strip().upper()
+            
             natija_savollar.append({
-                "savol_matni": s["savol_matni"],
-                "variantlar": s["variantlar"],
-                "belgilangan": belgilangan or "Javob berilmagan",
-                "togri_javob": haqiqiy,
-                "togrimi": bool(belgilangan and belgilangan == haqiqiy)
+                "savol_matni": s.get("savol_matni", "Savol matni mavjud emas"),
+                "variantlar": s.get("variantlar", []),
+                "belgilangan": belgilangan if belgilangan else "Belgilanmagan",
+                "togri_javob": haqiqiy if haqiqiy else "Ko‘rsatilmagan",
+                "togrimi": bool(belgilangan and haqiqiy and belgilangan == haqiqiy)
             })
 
-        return {"holat": "Muvaffaqiyatli", "ball": row[2], "savollar": natija_savollar}
+        return {
+            "holat": "Muvaffaqiyatli",
+            "ball": ball or 0,
+            "savollar": natija_savollar
+        }
     except Exception as e:
-        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+        return JSONResponse(status_code=500, content={"xatolik": f"Tahlil xatosi: {str(e)}"})
     finally:
         cursor.close()
         conn.close()
