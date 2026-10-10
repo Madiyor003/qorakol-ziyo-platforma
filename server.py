@@ -274,7 +274,7 @@ async def admin_add_teacher(data: YangiOqituvchi):
             data.fio.strip(), data.login.strip(), data.parol.strip(),
             data.fan.strip(), (data.telefon or "").strip()
         ))
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi muvaffaqiyatli biriktirildi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi muvaffaqiyatli saqlandi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": f"Xatolik: {str(e)}"})
     finally:
@@ -301,7 +301,7 @@ async def delete_teacher(tid: int):
     cursor = conn.cursor()
     try:
         cursor.execute(f"DELETE FROM oqituvchilar WHERE id = {PH}", (tid,))
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi tizimdan o‘chirildi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi o‘chirildi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
@@ -406,7 +406,7 @@ async def delete_student(oid: int):
         cursor.close()
         conn.close()
 
-# --- 4. To'lovlar va cheklar ---
+# --- 4. To'lovlar va cheklar (Xavfsiz va alohida tekshiruv bilan) ---
 @app.post("/api/tolov/chek_yuklash")
 async def upload_payment_receipt(oquvchi_id: int = Form(...), test_id: int = Form(...), summa: int = Form(10000), chek: UploadFile = File(...)):
     conn = get_db()
@@ -436,19 +436,24 @@ async def get_pending_payments():
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute("""
-            SELECT t.id, o.fio, o.telefon, te.nomi, t.summa, t.chek_rasm, t.yuklangan_vaqt
-            FROM tolovlar t
-            JOIN oquvchilar o ON t.oquvchi_id = o.id
-            JOIN testlar te ON t.test_id = te.id
-            WHERE t.holat = 'kutilmoqda'
-            ORDER BY t.id DESC
-        """)
+        cursor.execute("SELECT id, oquvchi_id, test_id, summa, chek_rasm, yuklangan_vaqt FROM tolovlar WHERE holat = 'kutilmoqda' ORDER BY id DESC")
         rows = cursor.fetchall()
-        return [{
-            "id": r[0], "fio": r[1], "telefon": r[2], "test_nomi": r[3],
-            "summa": r[4], "chek_rasm": r[5], "vaqt": str(r[6])
-        } for r in rows]
+        natija = []
+        for r in rows:
+            cursor.execute(f"SELECT fio, telefon FROM oquvchilar WHERE id = {PH}", (r[1],))
+            o = cursor.fetchone()
+            cursor.execute(f"SELECT nomi FROM testlar WHERE id = {PH}", (r[2],))
+            t = cursor.fetchone()
+            natija.append({
+                "id": r[0],
+                "fio": o[0] if o else "Noma'lum",
+                "telefon": o[1] if o else "-",
+                "test_nomi": t[0] if t else "Test",
+                "summa": r[3],
+                "chek_rasm": r[4],
+                "vaqt": str(r[5])
+            })
+        return natija
     except:
         return []
     finally:
@@ -761,7 +766,7 @@ async def upload_excel_questions(test_id: int = Form(...), fayl: UploadFile = Fi
 
         return {"holat": "Muvaffaqiyatli", "xabar": f"✅ Exceldan {qoshildi} ta savol muvaffaqiyatli yuklandi!"}
     except Exception as e:
-        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+        return JSONResponse(status_code=500, content={"xatolik": f"Excel o‘qishda xatolik: {str(e)}"})
     finally:
         cursor.close()
         conn.close()
