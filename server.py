@@ -236,6 +236,8 @@ async def get_student_results(oquvchi_id: int):
 
         tarix = []
         for r in rows:
+            # Agar orin 0 yoki None bo'lsa, kamida 1 ko'rsatiladi
+            orin_korsatish = r[6] if (r[6] and r[6] > 0) else 1
             tarix.append({
                 "id": r[9],
                 "bosqich_turi": str(r[0]).strip().lower() if r[0] else "haftalik",
@@ -244,7 +246,7 @@ async def get_student_results(oquvchi_id: int):
                 "oy_nomi": str(r[3]).strip() if r[3] else "Oktyabr",
                 "ball": int(r[4]) if r[4] is not None else 0,
                 "jami_savol": int(r[5]) if r[5] is not None else 100,
-                "orin": int(r[6]) if r[6] is not None else 1,
+                "orin": orin_korsatish,
                 "sana": str(r[7]) if r[7] else "",
                 "fan": str(r[8]).strip() if r[8] else "Informatika"
             })
@@ -524,10 +526,27 @@ async def create_online_test(data: YangiOnlineTest):
     cursor = conn.cursor()
     try:
         cursor.execute(f"""
-            INSERT INTO testlar (nomi, fan, sinf, turi, davomiyligi_daqiqa, narxi, boshlanish_vaqti, tugash_vaqti, yaratuvchi_id)
-            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH})
+            INSERT INTO testlar (nomi, fan, sinf, turi, davomiyligi_daqiqa, narxi, boshlanish_vaqti, tugash_vaqti, yaratuvchi_id, javoblar_ochiq)
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, {PH}, 0)
         """, (data.nomi.strip(), data.fan.strip(), data.sinf, data.turi.strip(), data.davomiyligi_daqiqa, data.narxi, data.boshlanish_vaqti, data.tugash_vaqti, data.yaratuvchi_id))
         return {"holat": "Muvaffaqiyatli", "xabar": "Yangi test bazasi yaratildi!"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.delete("/api/test/ochirish/{test_id}")
+async def delete_test(test_id: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DELETE FROM savollar WHERE test_id = {PH}", (test_id,))
+        cursor.execute(f"DELETE FROM test_urinishlari WHERE test_id = {PH}", (test_id,))
+        cursor.execute(f"DELETE FROM natijalar WHERE tadbir_id = {PH}", (test_id,))
+        cursor.execute(f"DELETE FROM tolovlar WHERE test_id = {PH}", (test_id,))
+        cursor.execute(f"DELETE FROM testlar WHERE id = {PH}", (test_id,))
+        return {"holat": "Muvaffaqiyatli", "xabar": "Test va unga tegishli savollar butunlay o‘chirildi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
@@ -585,6 +604,9 @@ async def get_test_list(sinf: Optional[int] = None, fan: Optional[str] = None, o
                     if cursor.fetchone():
                         tolangan = True
 
+            cursor.execute(f"SELECT COUNT(*) FROM savollar WHERE test_id = {PH}", (test_id,))
+            s_soni = cursor.fetchone()[0]
+
             natija.append({
                 "id": test_id,
                 "nomi": nomi,
@@ -598,6 +620,7 @@ async def get_test_list(sinf: Optional[int] = None, fan: Optional[str] = None, o
                 "toplagan_ball": toplagan_ball,
                 "tolangan": tolangan,
                 "javoblar_ochiq": bool(j_ochiq),
+                "savollar_soni": s_soni,
                 "boshlanish_vaqti": str(bosh_v) if bosh_v else None,
                 "tugash_vaqti": str(tug_v) if tug_v else None
             })
@@ -614,7 +637,7 @@ async def start_test(test_id: int, oquvchi_id: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute(f"SELECT id, tanlangan_savollar, holat FROM test_urinishlari WHERE test_id = {PH} AND oquvchi_id = {PH}", (test_id, oquvchi_id))
+        cursor.execute(f"SELECT id, tanlangan_savollar, holat, boshlangan_vaqt FROM test_urinishlari WHERE test_id = {PH} AND oquvchi_id = {PH}", (test_id, oquvchi_id))
         eski_urinish = cursor.fetchone()
 
         if eski_urinish:
@@ -622,7 +645,7 @@ async def start_test(test_id: int, oquvchi_id: int):
                 return JSONResponse(status_code=400, content={"xatolik": "Siz ushbu testni allaqachon topshirgansiz!"})
             urinish_id = eski_urinish[0]
             savollar_paketi = json.loads(eski_urinish[1])
-            return {"urinish_id": urinish_id, "savollar": savollar_paketi}
+            return {"urinish_id": urinish_id, "savollar": savollar_paketi, "boshlangan_vaqt": str(eski_urinish[3])}
 
         cursor.execute(f"SELECT id, savol_matni, rasm_url, variant_a, variant_b, variant_c, variant_d, togri_javob FROM savollar WHERE test_id = {PH}", (test_id,))
         bank = cursor.fetchall()
@@ -649,20 +672,24 @@ async def start_test(test_id: int, oquvchi_id: int):
                 "variantlar": variantlar
             })
 
+        hozir_iso = datetime.now().isoformat()
         if IS_PG:
             cursor.execute(f"""
-                INSERT INTO test_urinishlari (oquvchi_id, test_id, tanlangan_savollar, holat)
-                VALUES ({PH}, {PH}, {PH}, 'boshlangan') RETURNING id
+                INSERT INTO test_urinishlari (oquvchi_id, test_id, tanlangan_savollar, holat, boshlangan_vaqt)
+                VALUES ({PH}, {PH}, {PH}, 'boshlangan', CURRENT_TIMESTAMP) RETURNING id, boshlangan_vaqt
             """, (oquvchi_id, test_id, json.dumps(savollar_paketi)))
-            yangi_urinish_id = cursor.fetchone()[0]
+            row_res = cursor.fetchone()
+            yangi_urinish_id = row_res[0]
+            bosh_vaqt = str(row_res[1])
         else:
             cursor.execute(f"""
-                INSERT INTO test_urinishlari (oquvchi_id, test_id, tanlangan_savollar, holat)
-                VALUES ({PH}, {PH}, {PH}, 'boshlangan')
-            """, (oquvchi_id, test_id, json.dumps(savollar_paketi)))
+                INSERT INTO test_urinishlari (oquvchi_id, test_id, tanlangan_savollar, holat, boshlangan_vaqt)
+                VALUES ({PH}, {PH}, {PH}, 'boshlangan', {PH})
+            """, (oquvchi_id, test_id, json.dumps(savollar_paketi), hozir_iso))
             yangi_urinish_id = cursor.lastrowid
+            bosh_vaqt = hozir_iso
 
-        return {"urinish_id": yangi_urinish_id, "savollar": savollar_paketi}
+        return {"urinish_id": yangi_urinish_id, "savollar": savollar_paketi, "boshlangan_vaqt": bosh_vaqt}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
@@ -691,19 +718,34 @@ async def submit_test(data: TestTopshirish):
         togri_javoblar = dict(cursor.fetchall())
 
         ball = 0
+        tafsilotlar = []
         for s in paketi:
             sid = str(s["savol_id"])
-            belgilangan = data.javoblar.get(sid)
-            haqiqiy_togri = togri_javoblar.get(int(sid))
-            if belgilangan and haqiqiy_togri and belgilangan.strip().upper() == haqiqiy_togri.strip().upper():
+            belgilangan = data.javoblar.get(sid, "").strip().upper()
+            haqiqiy_togri = togri_javoblar.get(int(sid), "").strip().upper()
+            togrimi = bool(belgilangan and haqiqiy_togri and belgilangan == haqiqiy_togri)
+            if togrimi:
                 ball += 4
+            tafsilotlar.append({
+                "savol_id": int(sid),
+                "savol_matni": s["savol_matni"],
+                "belgilangan": belgilangan,
+                "togri_javob": haqiqiy_togri,
+                "togrimi": togrimi
+            })
 
         hozir = datetime.now()
-        try:
-            bosh_dt = datetime.fromisoformat(str(bosh_v)) if "T" in str(bosh_v) else datetime.strptime(str(bosh_v), "%Y-%m-%d %H:%M:%S")
-            sarflangan = int((hozir - bosh_dt).total_seconds())
-        except:
-            sarflangan = 0
+        sarflangan = 0
+        if bosh_v:
+            try:
+                bosh_str = str(bosh_v).replace("Z", "")
+                if "T" in bosh_str:
+                    bosh_dt = datetime.fromisoformat(bosh_str)
+                else:
+                    bosh_dt = datetime.strptime(bosh_str.split(".")[0], "%Y-%m-%d %H:%M:%S")
+                sarflangan = max(1, int((hozir - bosh_dt).total_seconds()))
+            except:
+                sarflangan = 60
 
         cursor.execute(f"""
             UPDATE test_urinishlari
@@ -716,12 +758,33 @@ async def submit_test(data: TestTopshirish):
         fan_n = t_info[0] if t_info else "Informatika"
         b_tur = t_info[1] if t_info else "kunlik"
 
+        # Reytingdagi haqiqiy o'rinni hisoblash
         cursor.execute(f"""
-            INSERT INTO natijalar (oquvchi_id, tadbir_id, fan, bosqich_turi, ball, jami_savol, sarflangan_soniya)
-            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, 100, {PH})
-        """, (oquvchi_id, test_id, fan_n, b_tur, ball, sarflangan))
+            SELECT COUNT(*) FROM natijalar 
+            WHERE fan = {PH} AND bosqich_turi = {PH} AND (ball > {PH} OR (ball = {PH} AND sarflangan_soniya < {PH}))
+        """, (fan_n, b_tur, ball, ball, sarflangan))
+        yangi_orin = (cursor.fetchone()[0] or 0) + 1
 
-        return {"holat": "Muvaffaqiyatli", "ball": ball, "sarflangan_soniya": sarflangan}
+        cursor.execute(f"""
+            INSERT INTO natijalar (oquvchi_id, tadbir_id, fan, bosqich_turi, ball, jami_savol, sarflangan_soniya, orin)
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, 100, {PH}, {PH})
+        """, (oquvchi_id, test_id, fan_n, b_tur, ball, sarflangan, yangi_orin))
+
+        cursor.execute(f"SELECT javoblar_ochiq FROM testlar WHERE id = {PH}", (test_id,))
+        j_ochiq = bool(cursor.fetchone()[0])
+
+        daq = sarflangan // 60
+        son = sarflangan % 60
+
+        return {
+            "holat": "Muvaffaqiyatli",
+            "ball": ball,
+            "sarflangan_soniya": sarflangan,
+            "vaqt_matn": f"{daq} daqiqa {son} soniya",
+            "orin": yangi_orin,
+            "javoblar_ochiq": j_ochiq,
+            "tafsilotlar": tafsilotlar if j_ochiq else []
+        }
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
