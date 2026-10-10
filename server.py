@@ -597,7 +597,9 @@ async def get_test_list(sinf: Optional[int] = None, fan: Optional[str] = None, o
                 "ishlangan": ishlangan,
                 "toplagan_ball": toplagan_ball,
                 "tolangan": tolangan,
-                "javoblar_ochiq": bool(j_ochiq)
+                "javoblar_ochiq": bool(j_ochiq),
+                "boshlanish_vaqti": str(bosh_v) if bosh_v else None,
+                "tugash_vaqti": str(tug_v) if tug_v else None
             })
 
         return {"holat": "Muvaffaqiyatli", "testlar": natija}
