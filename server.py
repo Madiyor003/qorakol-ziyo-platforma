@@ -483,6 +483,29 @@ async def upload_payment_receipt(oquvchi_id: int = Form(...), test_id: int = For
         cursor.close()
         conn.close()
 
+# CHEK RASMINI XAVFSIZ VA KAFOLATLI KO'RSATISH
+@app.get("/api/tolov/chek_korish/{tolov_id}")
+async def view_receipt_file(tolov_id: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"SELECT chek_rasm FROM tolovlar WHERE id = {PH}", (tolov_id,))
+        row = cursor.fetchone()
+        if not row or not row[0]:
+            return JSONResponse(status_code=404, content={"xatolik": "Chek rasmi topilmadi!"})
+        
+        fayl_nomi = os.path.basename(str(row[0]))
+        fayl_yoli = os.path.join(UPLOADS_DIR, fayl_nomi)
+        
+        if os.path.exists(fayl_yoli):
+            return FileResponse(fayl_yoli)
+        return JSONResponse(status_code=404, content={"xatolik": "Fayl serverda topilmadi!"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
 @app.get("/api/admin/kutilayotgan_tolovlar")
 async def get_pending_payments():
     conn = get_db()
@@ -502,25 +525,12 @@ async def get_pending_payments():
                 "telefon": o[1] if o else "-",
                 "test_nomi": t[0] if t else "Test",
                 "summa": r[3],
-                "chek_rasm": r[4],
+                "chek_rasm": f"/api/tolov/chek_korish/{r[0]}",
                 "vaqt": str(r[5])
             })
         return natija
     except:
         return []
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.put("/api/admin/tolov_tasdiqlash/{tolov_id}")
-async def approve_payment(tolov_id: int, holat: str = "tasdiqlandi"):
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(f"UPDATE tolovlar SET holat = {PH} WHERE id = {PH}", (holat, tolov_id))
-        return {"holat": "Muvaffaqiyatli", "xabar": f"To‘lov holati '{holat}' ga o‘zgartirildi!"}
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
         cursor.close()
         conn.close()
