@@ -301,33 +301,22 @@
     </div>
 
     <script>
-        function yuklashHammasi() {
-            yuklashTolovlar();
-            yuklashImtihonlar();
-            yuklashOqituvchilar();
-            yuklashOquvchilar();
-        }
-
         async function yuklashTolovlar() {
             const tbody = document.getElementById("tolovlarTable");
             try {
                 const res = await fetch("/api/admin/kutilayotgan_tolovlar");
                 const royxat = await res.json();
-
                 if (!royxat || royxat.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Kutilayotgan to‘lov cheklari yo‘q.</td></tr>`;
                     return;
                 }
-
                 tbody.innerHTML = royxat.map(t => `
                     <tr>
                         <td style="font-weight: 700; color: #38bdf8;">${t.fio}</td>
                         <td>${t.telefon}</td>
                         <td>${t.test_nomi}</td>
                         <td style="color: #34d399; font-weight: 800;">${t.summa} so‘m</td>
-                        <td>
-                            <a href="${t.chek_rasm}" target="_blank" style="color: #f59e0b; text-decoration: underline; font-weight: 700;">🖼️ Chekni ochish</a>
-                        </td>
+                        <td><a href="${t.chek_rasm}" target="_blank" style="color: #f59e0b; text-decoration: underline; font-weight: 700;">🖼️ Chekni ochish</a></td>
                         <td style="display: flex; gap: 8px;">
                             <button onclick="tasdiqlashChek(${t.id}, 'tasdiqlandi')" class="btn-sm-ok">✅ Ruxsat</button>
                             <button onclick="tasdiqlashChek(${t.id}, 'rad_etildi')" class="btn-sm-del">❌ Rad</button>
@@ -475,4 +464,23 @@
                         <td><button onclick="ochirishOquvchi(${o.id})" class="btn-sm-del">O‘chirish</button></td>
                     </tr>
                 `).join('');
-            } catch(e)
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Ro‘yxatdan o‘tgan o‘quvchilar yo‘q.</td></tr>`;
+            }
+        }
+
+        async function ochirishOquvchi(id) {
+            if (!confirm("O‘quvchini tizimdan o‘chirasizmi?")) return;
+            await fetch(`/api/admin/oquvchi_ochirish/${id}`, { method: 'DELETE' });
+            yuklashOquvchilar();
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            yuklashTolovlar();
+            yuklashImtihonlar();
+            yuklashOqituvchilar();
+            yuklashOquvchilar();
+        });
+    </script>
+</body>
+</html>
