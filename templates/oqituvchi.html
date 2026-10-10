@@ -87,7 +87,7 @@
         <div class="tabs-header">
             <button class="main-tab active" onclick="ochishTab('yangiTestTab', this)">➕ 1. Yangi Test Yaratish</button>
             <button class="main-tab" onclick="ochishTab('savollarYuklashTab', this)">📥 2. Savollar Bankini To‘ldirish (3 xil usul)</button>
-            <button class="main-tab" onclick="ochishTab('testlarBoshqaruvTab', this)">📋 3. Mening Testlarim & To‘g‘ri Javoblar</button>
+            <button class="main-tab" onclick="ochishTab('testlarBoshqaruvTab', this)">📋 3. Mening Testlarim & Boshqaruv</button>
         </div>
 
         <!-- 1-TAB: YANGI TEST YARATISH -->
@@ -118,7 +118,7 @@
                     </div>
                     <div class="input-group">
                         <label>Sinov davri (turi):</label>
-                        <select id="test_turi" onchange="tekshirTuri(this.value)">
+                        <select id="test_turi">
                             <option value="kunlik">Kunlik test (Xohlagan payt ishlanadi)</option>
                             <option value="haftalik">Haftalik bellashuv (Vaqti belgilangan)</option>
                             <option value="oylik">Oylik Katta Olimpiada (Pullik / Mukofotli)</option>
@@ -170,7 +170,7 @@
                 <button type="button" onclick="yuklashMatnSavollar()" class="btn-submit" style="margin-top: 15px;">⚡ Avtomatik Ajratib Bazaga Saqlash</button>
             </div>
 
-            <!-- 2-USUL: EXCEL (OBRAZETS I SHABLON) -->
+            <!-- 2-USUL: EXCEL -->
             <div class="upload-subbox" id="usulExcelBox" style="display: none; padding: 20px; background: #f8fafc; border: 2px dashed #6366f1; border-radius: 12px; text-align: center;">
                 <div style="margin-bottom: 15px;">
                     <p style="font-size: 14px; color: #3730a3; font-weight: 800; margin-bottom: 6px;">
@@ -181,7 +181,7 @@
                     </code>
                 </div>
 
-                <!-- Obrazets tablitsy -->
+                <!-- Obrazets jadvali -->
                 <div style="overflow-x: auto; margin-bottom: 18px;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 12px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; text-align: left;">
                         <thead>
@@ -207,9 +207,8 @@
                     </table>
                 </div>
 
-                <!-- Knopka skachivaniya shablona -->
                 <div style="margin-bottom: 18px;">
-                    <button type="button" onclick="namunaExcelYuklabOlish()" style="background: #0284c7; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
+                    <button type="button" onclick="namunaExcelYuklabOlish()" style="background: #0284c7; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;">
                         📥 Namunaviy Shablonni Yuklab Olish (.csv / Excel)
                     </button>
                 </div>
@@ -246,7 +245,7 @@
             </div>
         </div>
 
-        <!-- 3-TAB: TESTLARNI BOSHQARISH VA TO'G'RI JAVOBLAR -->
+        <!-- 3-TAB: TESTLARNI BOSHQARISH -->
         <div class="card" id="testlarBoshqaruvTab" style="display: none;">
             <h2>📋 Siz Yaratgan Testlar Ro‘yxati</h2>
             <div id="ustozTestlarRoyxati">Yuklanmoqda...</div>
@@ -329,9 +328,11 @@
                 const data = await res.json();
                 const testlar = data.testlar || [];
 
+                // Selectga ID si bilan aniq yoziladi, adashib ketmaslik uchun
                 const select = document.getElementById("tanlanganTestSelect");
-                select.innerHTML = testlar.map(t => `<option value="${t.id}">${t.nomi} (${t.sinf}-sinf, ${t.turi})</option>`).join('');
+                select.innerHTML = testlar.map(t => `<option value="${t.id}">[ID: ${t.id}] ${t.nomi} (${t.sinf}-sinf, ${t.turi}) - ${t.savollar_soni || 0} ta savol</option>`).join('');
 
+                // 3-tabga chiqarish
                 const container = document.getElementById("ustozTestlarRoyxati");
                 if (testlar.length === 0) {
                     container.innerHTML = "<p style='color:#64748b;'>Hali hech qanday test yaratilmagan.</p>";
@@ -342,19 +343,32 @@
                     <div class="test-card-item">
                         <div>
                             <span class="badge badge-${t.turi}">${t.turi.toUpperCase()}</span>
-                            <b style="font-size: 15px; margin-left: 8px;">${t.nomi}</b>
+                            <b style="font-size: 15px; margin-left: 8px;">[ID: ${t.id}] ${t.nomi}</b>
                             <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
-                                Sinf: ${t.sinf}-sinf | Vaqt: ${t.davomiyligi_daqiqa} daq | Narxi: ${t.narxi > 0 ? t.narxi + " so‘m" : "Bepul"}
+                                Sinf: ${t.sinf}-sinf | Savollar: <b style="color: #4338ca;">${t.savollar_soni || 0} ta</b> | Vaqt: ${t.davomiyligi_daqiqa} daq | Narxi: ${t.narxi > 0 ? t.narxi + " so‘m" : "Bepul"}
                             </div>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <button onclick="ochishJavoblar(${t.id}, ${!t.javoblar_ochiq})" style="background: ${t.javoblar_ochiq ? '#ef4444' : '#10b981'}; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;">
                                 ${t.javoblar_ochiq ? "🔒 Javoblarni Yopish" : "🔓 To‘g‘ri Javoblarni Ochish"}
+                            </button>
+                            <button onclick="ochirishTest(${t.id})" style="background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                                🗑️ O‘chirish
                             </button>
                         </div>
                     </div>
                 `).join('');
             } catch(e) { console.error(e); }
+        }
+
+        async function ochirishTest(testId) {
+            if (!confirm("Haqiqatan ham ushbu testni va unga yuklangan barcha savollarni butunlay o‘chirib tashlamoqchimisiz?")) return;
+            try {
+                const res = await fetch(`/api/test/ochirish/${testId}`, { method: 'DELETE' });
+                const d = await res.json();
+                alert(d.xabar);
+                yuklashUstozTestlari();
+            } catch(e) { alert("Xatolik!"); }
         }
 
         async function ochishJavoblar(testId, ochish) {
@@ -379,7 +393,10 @@
                 const res = await fetch("/api/test/savollar_matn_yuklash", { method: "POST", body: fd });
                 const d = await res.json();
                 alert(d.xabar);
-                if (res.ok) document.getElementById("matnTestlar").value = "";
+                if (res.ok) {
+                    document.getElementById("matnTestlar").value = "";
+                    yuklashUstozTestlari();
+                }
             } catch(e) { alert("Xatolik!"); }
         }
 
@@ -396,7 +413,10 @@
                 const res = await fetch("/api/test/savollar_excel_yuklash", { method: "POST", body: fd });
                 const d = await res.json();
                 alert(d.xabar || d.xatolik);
-                if (res.ok) document.getElementById("faylSavollarExcel").value = "";
+                if (res.ok) {
+                    document.getElementById("faylSavollarExcel").value = "";
+                    yuklashUstozTestlari();
+                }
             } catch(e) { alert("Xatolik!"); }
         }
 
@@ -425,6 +445,7 @@
                     document.getElementById("yakka_b").value = "";
                     document.getElementById("yakka_c").value = "";
                     document.getElementById("yakka_d").value = "";
+                    yuklashUstozTestlari();
                 }
             } catch(e) { alert("Xatolik!"); }
         }
