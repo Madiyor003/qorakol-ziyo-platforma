@@ -41,7 +41,7 @@
         .btn-action { width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; text-align: center; border: none; cursor: pointer; text-decoration: none; display: block; }
         .btn-start { background: #4f46e5; color: white; }
         .btn-done { background: #e0e7ff; color: #4338ca; }
-        .timer-box { background: #fffbeb; color: #b45309; padding: 10px 14px; border-radius: 10px; font-weight: 800; font-size: 14px; text-align: center; border: 1.5px dashed #f59e0b; }
+        .timer-box { background: #fffbeb; color: #b45309; padding: 12px 14px; border-radius: 10px; font-weight: 800; font-size: 14px; text-align: center; border: 1.5px dashed #f59e0b; }
 
         .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 100; }
         .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
@@ -223,7 +223,6 @@
             } catch(e) { container.innerHTML = `<p style="color:red;">Aloqa xatosi!</p>`; }
         }
 
-        // Chek yuklash oynasini ochish
         function ochishChekYuklash(testId, nomi, narxi) {
             document.getElementById("modalTestId").value = testId;
             document.getElementById("modalNarxi").value = narxi;
@@ -231,7 +230,6 @@
             document.getElementById("chekModal").style.display = "flex";
         }
 
-        // Chekni serverga yuborish
         async function jonatishChek(e) {
             e.preventDefault();
             const testId = document.getElementById("modalTestId").value;
@@ -303,14 +301,24 @@
                 const vaqtStr = el.getAttribute("data-vaqt");
                 const testId = el.getAttribute("data-id");
                 if (!vaqtStr) return;
+                
                 const oraliq = new Date(vaqtStr).getTime() - new Date().getTime();
                 if (oraliq <= 0) {
                     const amalQuti = document.getElementById(`amal-joyi-${testId}`);
-                    if (amalQuti) amalQuti.innerHTML = `<a href="/test/${testId}" class="btn-action btn-start">🚀 Testni Boshlash</a>`;
+                    if (amalQuti) {
+                        amalQuti.innerHTML = `<a href="/test/${testId}" class="btn-action btn-start">🚀 Testni Boshlash</a>`;
+                    }
                 } else {
-                    const s = Math.floor((oraliq % (1000 * 60 * 60)) / (1000 * 60));
+                    const kun = Math.floor(oraliq / (1000 * 60 * 60 * 24));
+                    const soat = Math.floor((oraliq % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const daq = Math.floor((oraliq % (1000 * 60 * 60)) / (1000 * 60));
                     const son = Math.floor((oraliq % (1000 * 60)) / 1000);
-                    el.innerText = `${String(Math.floor(oraliq / (1000 * 60 * 60))).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(son).padStart(2, '0')}`;
+
+                    if (kun > 0) {
+                        el.innerText = `${kun} kun ${String(soat).padStart(2, '0')}:${String(daq).padStart(2, '0')}:${String(son).padStart(2, '0')}`;
+                    } else {
+                        el.innerText = `${String(soat).padStart(2, '0')}:${String(daq).padStart(2, '0')}:${String(son).padStart(2, '0')}`;
+                    }
                 }
             });
         }, 1000);
