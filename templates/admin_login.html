@@ -68,7 +68,8 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    sessionStorage.setItem("admin_auth", data.token || "super_admin_2026");
+                    // Mana bu yerda to'g'rilandi: kalit nomi aynan "admin_token" qilindi
+                    sessionStorage.setItem("admin_token", data.token || "super_admin_2026");
                     window.location.href = "/admin";
                 } else {
                     alert("Xatolik: " + (data.xatolik || "Login yoki parol noto‘g‘ri!"));
