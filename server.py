@@ -1000,6 +1000,7 @@ async def get_test_statistics(test_id: int):
         cursor.close()
         conn.close()
 
+# 1. Real vaqtda ishlab turgan o'quvchini testdan chetlatish (chiqarib yuborish)
 @app.put("/api/test/chiqarib_yuborish/{urinish_id}")
 async def kick_student_from_test(urinish_id: int):
     conn = get_db()
@@ -1007,30 +1008,52 @@ async def kick_student_from_test(urinish_id: int):
     try:
         cursor.execute(f"""
             UPDATE test_urinishlari 
-            SET holat = 'yakunlangan', ball = 0 
+            SET holat = 'chetlatildi', ball = 0, tugatilgan_vaqt = CURRENT_TIMESTAMP
             WHERE id = {PH}
         """, (urinish_id,))
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi testdan chiqarib yuborildi va urinishi bekor qilindi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi testdan chetlatildi va natijasi bekor qilindi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
         cursor.close()
         conn.close()
 
+# 2. Jonli test holatini o'quvchi tomonidan tekshirib turish (chetlatilganini darhol bilish uchun)
+@app.get("/api/test/holat_tekshirish/{urinish_id}")
+async def check_attempt_status(urinish_id: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"SELECT holat FROM test_urinishlari WHERE id = {PH}", (urinish_id,))
+        row = cursor.fetchone()
+        if not row:
+            return {"holat": "topilmadi"}
+        return {"holat": str(row[0]).strip().lower()}
+    except Exception as e:
+        return {"holat": "xatolik"}
+    finally:
+        cursor.close()
+        conn.close()
+
+# 3. O'quvchi uchun to'liq xatolar tahlilini olish (Kafolatlangan ishlash)
 @app.get("/api/oquvchi/test_tahlil/{test_id}/{oquvchi_id}")
 async def get_student_test_review(test_id: int, oquvchi_id: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        # 1. Testda to'g'ri javoblar o'qituvchi tomonidan ochilganligini qat'iy tekshirish
+        # 1. Javoblar ochiq ekanligini tekshirish
         cursor.execute(f"SELECT javoblar_ochiq FROM testlar WHERE id = {PH}", (test_id,))
         t_row = cursor.fetchone()
-        if not t_row or not t_row[0]:
+        if not t_row:
+            return JSONResponse(status_code=404, content={"xatolik": "Test topilmadi!"})
+        
+        j_ochiq = bool(t_row[0] == 1 or str(t_row[0]).lower() in ['true', 't', '1'])
+        if not j_ochiq:
             return JSONResponse(status_code=403, content={"xatolik": "O‘qituvchi hali to‘g‘ri javoblar tahlilini ochmagan!"})
 
-        # 2. O'quvchining oxirgi urinishini olish
+        # 2. O'quvchining oxirgi urinishini olish (yakunlangan yoki chetlatilgan)
         cursor.execute(f"""
-            SELECT tanlangan_savollar, berilgan_javoblar, ball 
+            SELECT tanlangan_savollar, berilgan_javoblar, ball, holat 
             FROM test_urinishlari 
             WHERE test_id = {PH} AND oquvchi_id = {PH}
             ORDER BY id DESC LIMIT 1
@@ -1038,13 +1061,13 @@ async def get_student_test_review(test_id: int, oquvchi_id: int):
         row = cursor.fetchone()
         
         if not row:
-            return JSONResponse(status_code=404, content={"xatolik": "Siz ushbu testni hali ishlamagansiz!"})
+            return JSONResponse(status_code=404, content={"xatolik": "Siz ushbu testni hali topshirmagansiz!"})
 
-        paketi_raw, javoblar_raw, ball = row
+        paketi_raw, javoblar_raw, ball, holat = row
         paketi = json.loads(paketi_raw) if paketi_raw else []
         javoblar = json.loads(javoblar_raw) if javoblar_raw else {}
 
-        # 3. Savollarning barcha variantlari va to'g'ri javoblarini olish
+        # 3. Bazadan to'g'ri javoblarni va variant matnlarini olish
         savol_ids = [s.get("savol_id") for s in paketi if isinstance(s, dict) and "savol_id" in s]
         savollar_baza = {}
         if savol_ids:
@@ -1069,7 +1092,6 @@ async def get_student_test_review(test_id: int, oquvchi_id: int):
 
             belgilangan_matn = baza_s.get(belgilangan_harf, "")
             togri_matn = baza_s.get(togri_harf, "")
-
             togrimi = bool(belgilangan_harf and togri_harf and belgilangan_harf == togri_harf)
 
             natija_savollar.append({
