@@ -102,6 +102,9 @@ class TestTopshirish(BaseModel):
     urinish_id: int
     javoblar: Dict[str, str]
 
+class ParolAlmashtirish(BaseModel):
+    yangi_parol: str
+
 # --- Sahifalar ---
 @app.get("/")
 async def root(): return FileResponse(os.path.join(TEMPLATES_DIR, "index.html"))
@@ -295,13 +298,26 @@ async def list_teachers():
         cursor.close()
         conn.close()
 
+@app.put("/api/admin/oqituvchi_parol/{tid}")
+async def admin_change_teacher_password(tid: int, data: ParolAlmashtirish):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"UPDATE oqituvchilar SET parol = {PH} WHERE id = {PH}", (data.yangi_parol.strip(), tid))
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi paroli muvaffaqiyatli o‘zgartirildi!"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
 @app.delete("/api/admin/oqituvchi_ochirish/{tid}")
 async def delete_teacher(tid: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
         cursor.execute(f"DELETE FROM oqituvchilar WHERE id = {PH}", (tid,))
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi o‘chirildi!"}
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘qituvchi tizimdan o‘chirildi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
@@ -392,21 +408,49 @@ async def list_students():
         cursor.close()
         conn.close()
 
-@app.delete("/api/admin/oquvchi_ochirish/{oid}")
-async def delete_student(oid: int):
+@app.put("/api/admin/oquvchi_parol/{oid}")
+async def admin_change_student_password(oid: int, data: ParolAlmashtirish):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        cursor.execute(f"DELETE FROM natijalar WHERE oquvchi_id = {PH}", (oid,))
-        cursor.execute(f"DELETE FROM oquvchilar WHERE id = {PH}", (oid,))
-        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi o‘chirildi!"}
+        cursor.execute(f"UPDATE oquvchilar SET parol = {PH} WHERE id = {PH}", (data.yangi_parol.strip(), oid))
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi paroli muvaffaqiyatli o‘zgartirildi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
         cursor.close()
         conn.close()
 
-# --- 4. To'lovlar va cheklar (Xavfsiz va alohida tekshiruv bilan) ---
+@app.delete("/api/admin/oquvchi_tarix_tozalash/{oid}")
+async def admin_clear_student_history(oid: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DELETE FROM natijalar WHERE oquvchi_id = {PH}", (oid,))
+        cursor.execute(f"DELETE FROM test_urinishlari WHERE oquvchi_id = {PH}", (oid,))
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchining barcha natijalari va test urinishlari tozalandi!"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.delete("/api/admin/oquvchi_ochirish/{oid}")
+async def delete_student(oid: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DELETE FROM natijalar WHERE oquvchi_id = {PH}", (oid,))
+        cursor.execute(f"DELETE FROM test_urinishlari WHERE oquvchi_id = {PH}", (oid,))
+        cursor.execute(f"DELETE FROM oquvchilar WHERE id = {PH}", (oid,))
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi tizimdan to‘liq o‘chirildi!"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
+# --- 4. To'lovlar va cheklar ---
 @app.post("/api/tolov/chek_yuklash")
 async def upload_payment_receipt(oquvchi_id: int = Form(...), test_id: int = Form(...), summa: int = Form(10000), chek: UploadFile = File(...)):
     conn = get_db()
