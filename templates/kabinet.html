@@ -43,9 +43,8 @@
         .btn-done { background: #e0e7ff; color: #4338ca; }
         .timer-box { background: #fffbeb; color: #b45309; padding: 10px 14px; border-radius: 10px; font-weight: 800; font-size: 14px; text-align: center; border: 1.5px dashed #f59e0b; }
 
-        /* Tahlil kartochkasi */
         .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 750px; width: 90%; max-height: 85vh; overflow-y: auto; }
+        .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
         .tahlil-savol-kartochka { border-radius: 14px; padding: 18px; margin-bottom: 15px; text-align: left; border: 1.5px solid #e2e8f0; }
         .tahlil-savol-kartochka.togri { background: #f0fdf4; border-color: #86efac; }
         .tahlil-savol-kartochka.xato { background: #fef2f2; border-color: #fca5a5; }
@@ -115,7 +114,30 @@
 
     </div>
 
-    <!-- SAVOLLAR VA XATOLAR TAHLILI MODALI -->
+    <!-- TO'LOV CHEKINI YUKLASH OYNASI -->
+    <div class="modal" id="chekModal">
+        <div class="modal-box" style="max-width: 480px; text-align: center;">
+            <h3 style="color: #4338ca; margin-bottom: 8px;">💳 To‘lov Chekini Yuklash</h3>
+            <p id="chekTestNomi" style="font-weight: 700; color: #1e1b4b; margin-bottom: 14px; font-size: 14px;"></p>
+            
+            <form onsubmit="jonatishChek(event)">
+                <input type="hidden" id="modalTestId">
+                <input type="hidden" id="modalNarxi">
+                <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 18px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px;">
+                        To‘lov skrinshotini (cheki) tanlang:
+                    </label>
+                    <input type="file" id="chekRasmInput" accept="image/*" required style="width: 100%; font-size: 13px;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" onclick="document.getElementById('chekModal').style.display='none'" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; font-weight: 700; cursor: pointer;">Bekor qilish</button>
+                    <button type="submit" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #4f46e5; color: white; font-weight: 700; cursor: pointer;">📤 Chekni Yuborish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- XATOLAR TAHLILI OYNASI -->
     <div class="modal" id="tahlilModal">
         <div class="modal-box">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 12px;">
@@ -153,7 +175,7 @@
                         tugma = `
                             <div class="btn-action btn-done" style="margin-bottom: 6px;">✅ Ishlangan: ${t.toplagan_ball} ball</div>
                             ${t.javoblar_ochiq ? `
-                                <button onclick="korishTahlil(\${t.id})" style="width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                <button onclick="korishTahlil(\${t.id})" style="width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer;">
                                     👁️ Xatolar Tahlilini Ko‘rish
                                 </button>
                             ` : `
@@ -162,6 +184,12 @@
                                 </div>
                             `}
                         `;
+                    } else if (!t.tolangan && t.narxi > 0) {
+                        tugma = `
+                            <button onclick="ochishChekYuklash(${t.id}, '${t.nomi.replace(/'/g, "\\'")}', ${t.narxi})" class="btn-action" style="background:#059669; color:white;">
+                                💳 To‘lov chekini yuklash (${t.narxi} so‘m)
+                            </button>
+                        `;
                     } else if (t.holat === "kutilmoqda" && t.boshlanish_vaqti) {
                         tugma = `
                             <div class="timer-box" id="taymer-quti-${t.id}">
@@ -169,8 +197,6 @@
                                 <span class="vaqt-sanoq" data-vaqt="${t.boshlanish_vaqti}" data-id="${t.id}" style="font-size: 16px; font-weight: 800; color: #d97706;">Hisoblanmoqda...</span>
                             </div>
                         `;
-                    } else if (!t.tolangan && t.narxi > 0) {
-                        tugma = `<button onclick="alert('To‘lov qilinishi lozim!')" class="btn-action" style="background:#059669; color:white;">💳 To‘lov qilish (${t.narxi} so‘m)</button>`;
                     } else {
                         tugma = `<a href="/test/${t.id}" class="btn-action btn-start">🚀 Testni Boshlash</a>`;
                     }
@@ -195,6 +221,40 @@
                     `;
                 }).join('');
             } catch(e) { container.innerHTML = `<p style="color:red;">Aloqa xatosi!</p>`; }
+        }
+
+        // Chek yuklash oynasini ochish
+        function ochishChekYuklash(testId, nomi, narxi) {
+            document.getElementById("modalTestId").value = testId;
+            document.getElementById("modalNarxi").value = narxi;
+            document.getElementById("chekTestNomi").innerText = `${nomi} (Narxi: ${narxi} so‘m)`;
+            document.getElementById("chekModal").style.display = "flex";
+        }
+
+        // Chekni serverga yuborish
+        async function jonatishChek(e) {
+            e.preventDefault();
+            const testId = document.getElementById("modalTestId").value;
+            const narxi = document.getElementById("modalNarxi").value;
+            const fayl = document.getElementById("chekRasmInput").files[0];
+
+            if (!fayl) return alert("Fayl tanlang!");
+
+            const fd = new FormData();
+            fd.append("oquvchi_id", userInfo.id);
+            fd.append("test_id", testId);
+            fd.append("summa", narxi);
+            fd.append("chek", fayl);
+
+            try {
+                const res = await fetch("/api/tolov/chek_yuklash", { method: "POST", body: fd });
+                const d = await res.json();
+                alert(d.xabar || "Chek qabul qilindi!");
+                document.getElementById("chekModal").style.display = "none";
+                yuklashTestlar();
+            } catch(err) {
+                alert("Chekni yuborishda xatolik yuz berdi!");
+            }
         }
 
         async function korishTahlil(testId) {
@@ -234,7 +294,6 @@
 
                 document.getElementById("tahlilModal").style.display = "flex";
             } catch(err) {
-                console.error(err);
                 alert("Aloqada xatolik yuz berdi!");
             }
         }
