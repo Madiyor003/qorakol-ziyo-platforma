@@ -3,49 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bog‘lanish va Qo‘llab-quvvatlash | Qorako‘l Ziyo</title>
+    <title>Bog‘lanish va Hamkorlik | Qorako‘l Ziyo</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%); color: #1e293b; min-height: 100vh; padding-bottom: 50px; }
-        .header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; }
+        body { 
+            background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%); 
+            color: #1e293b; 
+            min-height: 100vh; 
+            padding-bottom: 60px; 
+        }
+        
+        .header { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(12px); 
+            border-bottom: 1px solid #e2e8f0; 
+            padding: 16px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 20; 
+        }
         .logo { font-weight: 800; font-size: 18px; color: #4338ca; text-decoration: none; }
-        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-        .card { background: white; border-radius: 24px; padding: 35px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.05); }
-        h1 { font-size: 24px; font-weight: 800; color: #1e1b4b; margin-bottom: 10px; }
-        p { color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.6; }
-        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn-kabinet { 
+            background: #eef2ff; 
+            color: #4338ca; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 13px; 
+            text-decoration: none; 
+            transition: 0.2s;
+        }
+        .btn-kabinet:hover { background: #e0e7ff; }
+
+        .container { max-width: 860px; margin: 40px auto; padding: 0 20px; }
+        .card { 
+            background: white; 
+            border-radius: 24px; 
+            padding: 40px; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.05); 
+        }
+
+        h1 { font-size: 24px; font-weight: 800; color: #1e1b4b; margin-bottom: 8px; }
+        .desc { color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.6; }
+
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 30px; }
         @media (max-width: 650px) { .contact-grid { grid-template-columns: 1fr; } }
-        .contact-item { border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 22px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit; transition: 0.2s; background: #f8fafc; }
-        .contact-item:hover { border-color: #6366f1; background: #eef2ff; transform: translateY(-2px); }
-        .icon-box { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .c-title { font-size: 13px; font-weight: 700; color: #64748b; }
-        .c-value { font-size: 16px; font-weight: 800; color: #1e1b4b; margin-top: 4px; }
+        
+        .contact-item { 
+            border: 1.5px solid #e2e8f0; 
+            border-radius: 18px; 
+            padding: 18px 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 16px; 
+            text-decoration: none; 
+            color: inherit; 
+            transition: 0.2s; 
+            background: #f8fafc; 
+        }
+        .contact-item:hover { 
+            border-color: #6366f1; 
+            background: #eef2ff; 
+            transform: translateY(-2px); 
+        }
+        .icon-box { 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 14px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 22px; 
+        }
+        .c-title { font-size: 12px; font-weight: 700; color: #64748b; }
+        .c-value { font-size: 15px; font-weight: 800; color: #1e1b4b; margin-top: 3px; }
+
+        /* HAMKORLIK VA TARTIB BLOKLARI */
+        .info-section {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .info-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1e1b4b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-list {
+            margin-left: 20px;
+            color: #475569;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .info-list li {
+            margin-bottom: 8px;
+        }
+        .info-list li b {
+            color: #1e293b;
+        }
+        .info-note {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #1e40af;
+            font-weight: 600;
+            margin-top: 14px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
 
     <header class="header">
         <a href="/" class="logo">⚡ Qorako‘l Ziyo</a>
-        <a href="/kabinet" style="text-decoration: none; background: #eef2ff; color: #4338ca; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px;">🎓 Kabinetga Qaytish</a>
+        <a href="/kabinet" class="btn-kabinet">🎓 Kabinetga Qaytish</a>
     </header>
 
     <div class="container">
         <div class="card">
             <h1>📞 Biz bilan bog‘lanish</h1>
-            <p>Platformadan foydalanish, olimpiadalar yoki to‘lovlar bo‘yicha savollaringiz bo‘lsa, to‘g‘ridan-to‘g‘ri ma'muriyat bilan bog‘lanishingiz mumkin:</p>
+            <p class="desc">Platformadan foydalanish, savollar yoki hamkorlik bo‘yicha quyidagi rasmiy kanallarimiz orqali murojaat qilishingiz mumkin:</p>
 
+            <!-- ALOQA TUGMALARI -->
             <div class="contact-grid">
-                <!-- TELEGRAM ADMIN -->
-                <a href="https://t.me/@Yozilovmadiyor1" target="_blank" class="contact-item">
+                <a href="https://t.me/Yozilovmadiyor1" target="_blank" class="contact-item">
                     <div class="icon-box" style="background: #e0f2fe; color: #0284c7;">✈️</div>
                     <div>
                         <div class="c-title">Telegram Admin</div>
-                        <div class="c-value">@yozilov_madiyor</div>
+                        <div class="c-value">@Yozilovmadiyor1</div>
                     </div>
                 </a>
 
-                <!-- ISHONCH TELEFONI -->
                 <a href="tel:+998913080637" class="contact-item">
                     <div class="icon-box" style="background: #dcfce7; color: #16a34a;">📞</div>
                     <div>
@@ -54,6 +155,30 @@
                     </div>
                 </a>
             </div>
+
+            <!-- 1. HAMKORLIK BLOKI -->
+            <div class="info-section">
+                <div class="info-title">🤝 Fan o‘qituvchilari va maktablar bilan hamkorlik</div>
+                <ul class="info-list">
+                    <li><b>O‘qituvchi profilini olish:</b> O‘z fangingiz bo‘yicha sifatli testlar bazasini shakllantirib, o‘quvchilaringiz bilimini muntazam sinab bormoqchimisiz? Biz sizga tizimda shaxsiy o‘qituvchi profilini ochib beramiz.</li>
+                    <li><b>Savollar banki va metodika:</b> Test savollaridagi taklif yoki yangi metodik g‘oyalaringiz bo‘lsa, bizga yo‘llang. Har bir taklif platforma sifatini oshirish uchun albatta ko‘rib chiqiladi.</li>
+                    <li><b>Maktablar o‘rtasida musobaqalar:</b> O‘z maktabingiz yoki tumaningiz doirasida alohida olimpiada sinovlarini tashkil etish bo‘yicha hamkorlikka doim tayyormiz.</li>
+                </ul>
+            </div>
+
+            <!-- 2. ISH VAQTI VA MUROJAAT TARTIBI -->
+            <div class="info-section" style="margin-bottom: 0;">
+                <div class="info-title">⏰ Murojaat tartibi va ish vaqti</div>
+                <ul class="info-list">
+                    <li><b>Ish vaqti:</b> Dushanba – Shanba kunlari, soat <b>08:30 dan 18:00 gacha</b>.</li>
+                    <li><b>Dam olish kuni:</b> Yakshanba <i>(avtomatlashtirilgan test sinovlari 24/7 rejimida uzluksiz ishlayveradi)</i>.</li>
+                    <li><b>Javob berish muddati:</b> Ish vaqti davomida yuborilgan murojaatlarga 1–2 soat ichida javob qaytariladi.</li>
+                </ul>
+                <div class="info-note">
+                    💡 <b>Eslatma:</b> Murojaat yuborishda savolingiz tezkor hal bo‘lishi uchun F.I.O, maktabingiz va o‘quvchi ID raqamingizni (yoki fanni) xabarda ko‘rsatib yuborishingiz tavsiya etiladi.
+                </div>
+            </div>
+
         </div>
     </div>
 
