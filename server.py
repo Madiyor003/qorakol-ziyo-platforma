@@ -5,6 +5,7 @@ import re
 import json
 import random
 import shutil
+import base64
 from datetime import datetime
 import pandas as pd
 from fastapi import FastAPI, Form, UploadFile, File
@@ -350,121 +351,115 @@ async def login_teacher(data: LoginUniversal):
         cursor.close()
         conn.close()
 
-# 3. O'quvchi uchun to'liq xatolar tahlilini olish (Xatosiz, kafolatlangan ishlash)
-@app.get("/api/oquvchi/test_tahlil/{test_id}/{oquvchi_id}")
-async def get_student_test_review(test_id: int, oquvchi_id: int):
+# --- 3. Super Admin va Imtihonlar ---
+@app.post("/api/admin/login")
+async def admin_login(data: LoginUniversal):
+    kirgan_login = (data.login or data.username or "").strip()
+    kirgan_parol = (data.parol or data.password or "").strip()
+    if kirgan_login == "admin" and kirgan_parol == "admin2026":
+        return {"holat": "Muvaffaqiyatli", "token": "super_admin_2026"}
+    return JSONResponse(status_code=401, content={"xatolik": "Super Admin logini yoki paroli xato!"})
+
+@app.post("/api/admin/imtihon_qoshish")
+async def add_exam(data: YangiImtihon):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        # 1. Javoblar ochiq ekanligini tekshirish
-        cursor.execute(f"SELECT javoblar_ochiq FROM testlar WHERE id = {PH}", (test_id,))
-        t_row = cursor.fetchone()
-        if not t_row:
-            return JSONResponse(status_code=404, content={"xatolik": "Test topilmadi!"})
-        
-        j_ochiq = bool(t_row[0] == 1 or str(t_row[0]).lower() in ['true', 't', '1'])
-        if not j_ochiq:
-            return JSONResponse(status_code=403, content={"xatolik": "O‘qituvchi hali to‘g‘ri javoblar tahlilini ochmagan!"})
-
-        # 2. O'quvchining oxirgi urinishini olish
         cursor.execute(f"""
-            SELECT tanlangan_savollar, berilgan_javoblar, ball, holat 
-            FROM test_urinishlari 
-            WHERE test_id = {PH} AND oquvchi_id = {PH}
-            ORDER BY id DESC LIMIT 1
-        """, (test_id, oquvchi_id))
-        row = cursor.fetchone()
-        
-        if not row:
-            return JSONResponse(status_code=404, content={"xatolik": "Siz ushbu testni hali topshirmagansiz!"})
-
-        paketi_raw, javoblar_raw, ball, holat = row
-
-        # PostgreSQL va SQLite uchun xavfsiz JSON o'qish (TypeError ning oldini oladi)
-        if isinstance(paketi_raw, str):
-            try: paketi = json.loads(paketi_raw)
-            except: paketi = []
-        elif isinstance(paketi_raw, list):
-            paketi = paketi_raw
-        else:
-            paketi = []
-
-        if isinstance(javoblar_raw, str):
-            try: javoblar = json.loads(javoblar_raw)
-            except: javoblar = {}
-        elif isinstance(javoblar_raw, dict):
-            javoblar = javoblar_raw
-        else:
-            javoblar = {}
-
-        # 3. Bazadan to'g'ri javoblarni va variant matnlarini olish
-        savol_ids = []
-        for s in paketi:
-            if isinstance(s, dict) and s.get("savol_id"):
-                try: savol_ids.append(int(s["savol_id"]))
-                except: pass
-
-        savollar_baza = {}
-        if savol_ids:
-            placeholders = ",".join(PH for _ in savol_ids)
-            cursor.execute(f"""
-                SELECT id, savol_matni, variant_a, variant_b, variant_c, variant_d, togri_javob 
-                FROM savollar WHERE id IN ({placeholders})
-            """, tuple(savol_ids))
-            for r in cursor.fetchall():
-                savollar_baza[int(r[0])] = {
-                    "matn": r[1],
-                    "A": r[2], "B": r[3], "C": r[4], "D": r[5],
-                    "togri": str(r[6]).strip().upper() if r[6] else ""
-                }
-
-        natija_savollar = []
-        for s in paketi:
-            if not isinstance(s, dict):
-                continue
-            sid = s.get("savol_id")
-            try: sid_int = int(sid)
-            except: sid_int = 0
-
-            baza_s = savollar_baza.get(sid_int, {})
-
-            # Agar savol bazada o'zgargan bo'lsa ham urinish paketidagi variantlardan olish
-            v_map = {}
-            if "variantlar" in s and isinstance(s["variantlar"], list):
-                for v in s["variantlar"]:
-                    if isinstance(v, dict) and "kalit" in v:
-                        v_map[str(v.get("kalit")).upper()] = v.get("matn", "")
-
-            belgilangan_harf = str(javoblar.get(str(sid), javoblar.get(sid_int, ""))).strip().upper()
-            togri_harf = baza_s.get("togri", "")
-
-            belgilangan_matn = baza_s.get(belgilangan_harf, v_map.get(belgilangan_harf, ""))
-            togri_matn = baza_s.get(togri_harf, v_map.get(togri_harf, ""))
-            togrimi = bool(belgilangan_harf and togri_harf and belgilangan_harf == togri_harf)
-
-            natija_savollar.append({
-                "savol_matni": baza_s.get("matn", s.get("savol_matni", "")),
-                "belgilangan_harf": belgilangan_harf if belgilangan_harf else "Javobsiz",
-                "belgilangan_matn": belgilangan_matn,
-                "togri_harf": togri_harf,
-                "togri_matn": togri_matn,
-                "togrimi": togrimi
-            })
-
-        return {
-            "holat": "Muvaffaqiyatli",
-            "ball": ball or 0,
-            "savollar": natija_savollar
-        }
+            INSERT INTO imtihonlar (nomi, fan, sinf, boshlanish_vaqti, manzil, faol)
+            VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, 1)
+        """, (data.nomi.strip(), data.fan.strip(), data.sinf.strip(), data.boshlanish_vaqti.strip(), data.manzil.strip()))
+        return {"holat": "Muvaffaqiyatli", "xabar": "Imtihon e'lon qilindi!"}
     except Exception as e:
-        return JSONResponse(status_code=500, content={"xatolik": f"Tahlil xatosi: {str(e)}"})
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
         cursor.close()
         conn.close()
 
-# --- 4. To'lovlar va cheklar (Base64 formatida saqlash - yo'qolib ketmaydi) ---
-import base64
+@app.get("/api/admin/imtihonlar")
+async def list_exams():
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, nomi, fan, sinf, boshlanish_vaqti, manzil, faol FROM imtihonlar ORDER BY id DESC")
+        rows = cursor.fetchall()
+        return [{"id": r[0], "nomi": r[1], "fan": r[2], "sinf": r[3], "boshlanish_vaqti": r[4], "manzil": r[5], "faol": r[6]} for r in rows]
+    except:
+        return []
+    finally:
+        cursor.close()
+        conn.close()
 
+@app.delete("/api/admin/imtihon_ochirish/{iid}")
+async def delete_exam(iid: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DELETE FROM imtihonlar WHERE id = {PH}", (iid,))
+        return {"holat": "Muvaffaqiyatli", "xabar": "Imtihon o‘chirildi!"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.get("/api/admin/oquvchilar")
+async def list_students():
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, fio, telefon, maktab, sinf, parol, viloyat FROM oquvchilar ORDER BY sinf ASC, fio ASC")
+        rows = cursor.fetchall()
+        return [{"id": r[0], "fio": r[1], "telefon": r[2], "maktab": r[3], "sinf": r[4], "parol": r[5], "viloyat": r[6] if len(r)>6 else "Buxoro"} for r in rows]
+    except:
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.put("/api/admin/oquvchi_parol/{oid}")
+async def admin_change_student_password(oid: int, data: ParolAlmashtirish):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"UPDATE oquvchilar SET parol = {PH} WHERE id = {PH}", (data.yangi_parol.strip(), oid))
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi paroli muvaffaqiyatli o‘zgartirildi!"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.delete("/api/admin/oquvchi_tarix_tozalash/{oid}")
+async def admin_clear_student_history(oid: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DELETE FROM natijalar WHERE oquvchi_id = {PH}", (oid,))
+        cursor.execute(f"DELETE FROM test_urinishlari WHERE oquvchi_id = {PH}", (oid,))
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchining barcha natijalari va test urinishlari tozalandi!"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.delete("/api/admin/oquvchi_ochirish/{oid}")
+async def delete_student(oid: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"DELETE FROM natijalar WHERE oquvchi_id = {PH}", (oid,))
+        cursor.execute(f"DELETE FROM test_urinishlari WHERE oquvchi_id = {PH}", (oid,))
+        cursor.execute(f"DELETE FROM oquvchilar WHERE id = {PH}", (oid,))
+        return {"holat": "Muvaffaqiyatli", "xabar": "O‘quvchi tizimdan to‘liq o‘chirildi!"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
+# --- 4. To'lovlar va cheklar (Base64 formatida xavfsiz saqlash) ---
 @app.post("/api/tolov/chek_yuklash")
 async def upload_payment_receipt(oquvchi_id: int = Form(...), test_id: int = Form(...), summa: int = Form(10000), chek: UploadFile = File(...)):
     conn = get_db()
@@ -472,13 +467,7 @@ async def upload_payment_receipt(oquvchi_id: int = Form(...), test_id: int = For
     try:
         baytlar = await chek.read()
         kengaytma = chek.filename.split(".")[-1].lower()
-        if kengaytma in ["jpg", "jpeg"]:
-            mime = "image/jpeg"
-        elif kengaytma == "png":
-            mime = "image/png"
-        else:
-            mime = "image/jpeg"
-            
+        mime = "image/png" if kengaytma == "png" else "image/jpeg"
         b64_matn = f"data:{mime};base64," + base64.b64encode(baytlar).decode("utf-8")
 
         cursor.execute(f"""
@@ -511,7 +500,7 @@ async def get_pending_payments():
                 "telefon": o[1] if o else "-",
                 "test_nomi": t[0] if t else "Test",
                 "summa": r[3],
-                "chek_rasm": r[4],  # Base64 rasm kodi
+                "chek_rasm": r[4],
                 "vaqt": str(r[5])
             })
         return natija
@@ -530,58 +519,6 @@ async def approve_payment(tolov_id: int, holat: str = "tasdiqlandi"):
         return {"holat": "Muvaffaqiyatli", "xabar": f"To‘lov holati '{holat}' ga o‘zgartirildi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
-    finally:
-        cursor.close()
-        conn.close()
-
-# CHEK RASMINI XAVFSIZ VA KAFOLATLI KO'RSATISH
-@app.get("/api/tolov/chek_korish/{tolov_id}")
-async def view_receipt_file(tolov_id: int):
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(f"SELECT chek_rasm FROM tolovlar WHERE id = {PH}", (tolov_id,))
-        row = cursor.fetchone()
-        if not row or not row[0]:
-            return JSONResponse(status_code=404, content={"xatolik": "Chek rasmi topilmadi!"})
-        
-        fayl_nomi = os.path.basename(str(row[0]))
-        fayl_yoli = os.path.join(UPLOADS_DIR, fayl_nomi)
-        
-        if os.path.exists(fayl_yoli):
-            return FileResponse(fayl_yoli)
-        return JSONResponse(status_code=404, content={"xatolik": "Fayl serverda topilmadi!"})
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"xatolik": str(e)})
-    finally:
-        cursor.close()
-        conn.close()
-
-@app.get("/api/admin/kutilayotgan_tolovlar")
-async def get_pending_payments():
-    conn = get_db()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT id, oquvchi_id, test_id, summa, chek_rasm, yuklangan_vaqt FROM tolovlar WHERE holat = 'kutilmoqda' ORDER BY id DESC")
-        rows = cursor.fetchall()
-        natija = []
-        for r in rows:
-            cursor.execute(f"SELECT fio, telefon FROM oquvchilar WHERE id = {PH}", (r[1],))
-            o = cursor.fetchone()
-            cursor.execute(f"SELECT nomi FROM testlar WHERE id = {PH}", (r[2],))
-            t = cursor.fetchone()
-            natija.append({
-                "id": r[0],
-                "fio": o[0] if o else "Noma'lum",
-                "telefon": o[1] if o else "-",
-                "test_nomi": t[0] if t else "Test",
-                "summa": r[3],
-                "chek_rasm": f"/api/tolov/chek_korish/{r[0]}",
-                "vaqt": str(r[5])
-            })
-        return natija
-    except:
-        return []
     finally:
         cursor.close()
         conn.close()
@@ -754,20 +691,51 @@ async def delete_single_question(savol_id: int):
         cursor.close()
         conn.close()
 
+# TESTNI BOSHLASH (Qat'iy vaqt va to'lov tekshiruvi bilan)
 @app.get("/api/test/boshlash/{test_id}")
 async def start_test(test_id: int, oquvchi_id: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
+        # 1. Test boshlanish vaqti va to'lovini tekshirish
+        cursor.execute(f"SELECT boshlanish_vaqti, tugash_vaqti, narxi FROM testlar WHERE id = {PH}", (test_id,))
+        t_meta = cursor.fetchone()
+        if not t_meta:
+            return JSONResponse(status_code=404, content={"xatolik": "Test topilmadi!"})
+
+        bosh_v, tug_v, narxi = t_meta
+        hozir = datetime.now()
+
+        if bosh_v:
+            try:
+                bosh_dt = datetime.fromisoformat(str(bosh_v))
+                if hozir < bosh_dt:
+                    return JSONResponse(status_code=403, content={"xatolik": "Ushbu test vaqti hali boshlanmagan! Ruxsat etilmaydi."})
+            except Exception:
+                pass
+
+        if tug_v:
+            try:
+                tug_dt = datetime.fromisoformat(str(tug_v))
+                if hozir > tug_dt:
+                    return JSONResponse(status_code=403, content={"xatolik": "Ushbu test muddati yakunlangan!"})
+            except Exception:
+                pass
+
+        if narxi and narxi > 0:
+            cursor.execute(f"SELECT holat FROM tolovlar WHERE test_id = {PH} AND oquvchi_id = {PH} AND holat = 'tasdiqlandi'", (test_id, oquvchi_id))
+            if not cursor.fetchone():
+                return JSONResponse(status_code=403, content={"xatolik": "Ushbu test uchun to‘lov tasdiqlanmagan!"})
+
         cursor.execute(f"SELECT id, tanlangan_savollar, holat, boshlangan_vaqt FROM test_urinishlari WHERE test_id = {PH} AND oquvchi_id = {PH}", (test_id, oquvchi_id))
         eski_urinish = cursor.fetchone()
 
         if eski_urinish:
-            if eski_urinish[2] == "yakunlangan":
+            if eski_urinish[2] in ["yakunlangan", "chetlatildi"]:
                 return JSONResponse(status_code=400, content={"xatolik": "Siz ushbu testni allaqachon topshirgansiz!"})
             urinish_id = eski_urinish[0]
-            savollar_paketi = json.loads(eski_urinish[1])
-            return {"urinish_id": urinish_id, "savollar": savollar_paketi, "boshlangan_vaqt": str(eski_urinish[3])}
+            paketi = json.loads(eski_urinish[1]) if isinstance(eski_urinish[1], str) else eski_urinish[1]
+            return {"urinish_id": urinish_id, "savollar": paketi, "boshlangan_vaqt": str(eski_urinish[3])}
 
         cursor.execute(f"SELECT id, savol_matni, rasm_url, variant_a, variant_b, variant_c, variant_d, togri_javob FROM savollar WHERE test_id = {PH}", (test_id,))
         bank = cursor.fetchall()
@@ -828,11 +796,11 @@ async def submit_test(data: TestTopshirish):
 
         if not urinish:
             return JSONResponse(status_code=404, content={"xatolik": "Urinish topilmadi!"})
-        if urinish[4] == "yakunlangan":
-            return JSONResponse(status_code=400, content={"xatolik": "Test allaqachon topshirilgan!"})
+        if urinish[4] in ["yakunlangan", "chetlatildi"]:
+            return JSONResponse(status_code=400, content={"xatolik": "Test allaqachon yakunlangan!"})
 
         oquvchi_id, test_id, paketi_str, bosh_v, _ = urinish
-        paketi = json.loads(paketi_str)
+        paketi = json.loads(paketi_str) if isinstance(paketi_str, str) else paketi_str
         savol_ids = [s["savol_id"] for s in paketi]
 
         placeholders = ",".join(PH for _ in savol_ids)
@@ -844,7 +812,7 @@ async def submit_test(data: TestTopshirish):
         for s in paketi:
             sid = str(s["savol_id"])
             belgilangan = data.javoblar.get(sid, "").strip().upper()
-            haqiqiy_togri = togri_javoblar.get(int(sid), "").strip().upper()
+            haqiqiy_togri = str(togri_javoblar.get(int(sid), "")).strip().upper()
             togrimi = bool(belgilangan and haqiqiy_togri and belgilangan == haqiqiy_togri)
             if togrimi:
                 ball += 4
@@ -1023,11 +991,11 @@ async def get_test_statistics(test_id: int):
         for r in rows:
             u_id, fio, tel, sinf, maktab, ball, soniya, holat, bosh_v, javoblar_raw, paketi_raw = r
             
-            javoblar = json.loads(javoblar_raw) if javoblar_raw else {}
+            javoblar = json.loads(javoblar_raw) if isinstance(javoblar_raw, str) else (javoblar_raw or {})
             tahlil = []
             if paketi_raw:
                 try:
-                    paketi = json.loads(paketi_raw)
+                    paketi = json.loads(paketi_raw) if isinstance(paketi_raw, str) else paketi_raw
                     for s in paketi:
                         sid = s["savol_id"]
                         belgilangan = str(javoblar.get(str(sid), "")).strip().upper()
@@ -1061,7 +1029,6 @@ async def get_test_statistics(test_id: int):
         cursor.close()
         conn.close()
 
-# 1. Real vaqtda ishlab turgan o'quvchini testdan chetlatish (chiqarib yuborish)
 @app.put("/api/test/chiqarib_yuborish/{urinish_id}")
 async def kick_student_from_test(urinish_id: int):
     conn = get_db()
@@ -1079,7 +1046,6 @@ async def kick_student_from_test(urinish_id: int):
         cursor.close()
         conn.close()
 
-# 2. Jonli test holatini o'quvchi tomonidan tekshirib turish (chetlatilganini darhol bilish uchun)
 @app.get("/api/test/holat_tekshirish/{urinish_id}")
 async def check_attempt_status(urinish_id: int):
     conn = get_db()
@@ -1096,13 +1062,11 @@ async def check_attempt_status(urinish_id: int):
         cursor.close()
         conn.close()
 
-# 3. O'quvchi uchun to'liq xatolar tahlilini olish (Kafolatlangan ishlash)
 @app.get("/api/oquvchi/test_tahlil/{test_id}/{oquvchi_id}")
 async def get_student_test_review(test_id: int, oquvchi_id: int):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        # 1. Javoblar ochiq ekanligini tekshirish
         cursor.execute(f"SELECT javoblar_ochiq FROM testlar WHERE id = {PH}", (test_id,))
         t_row = cursor.fetchone()
         if not t_row:
@@ -1112,7 +1076,6 @@ async def get_student_test_review(test_id: int, oquvchi_id: int):
         if not j_ochiq:
             return JSONResponse(status_code=403, content={"xatolik": "O‘qituvchi hali to‘g‘ri javoblar tahlilini ochmagan!"})
 
-        # 2. O'quvchining oxirgi urinishini olish (yakunlangan yoki chetlatilgan)
         cursor.execute(f"""
             SELECT tanlangan_savollar, berilgan_javoblar, ball, holat 
             FROM test_urinishlari 
@@ -1125,11 +1088,15 @@ async def get_student_test_review(test_id: int, oquvchi_id: int):
             return JSONResponse(status_code=404, content={"xatolik": "Siz ushbu testni hali topshirmagansiz!"})
 
         paketi_raw, javoblar_raw, ball, holat = row
-        paketi = json.loads(paketi_raw) if paketi_raw else []
-        javoblar = json.loads(javoblar_raw) if javoblar_raw else {}
+        paketi = json.loads(paketi_raw) if isinstance(paketi_raw, str) else (paketi_raw or [])
+        javoblar = json.loads(javoblar_raw) if isinstance(javoblar_raw, str) else (javoblar_raw or {})
 
-        # 3. Bazadan to'g'ri javoblarni va variant matnlarini olish
-        savol_ids = [s.get("savol_id") for s in paketi if isinstance(s, dict) and "savol_id" in s]
+        savol_ids = []
+        for s in paketi:
+            if isinstance(s, dict) and s.get("savol_id"):
+                try: savol_ids.append(int(s["savol_id"]))
+                except: pass
+
         savollar_baza = {}
         if savol_ids:
             placeholders = ",".join(PH for _ in savol_ids)
@@ -1138,21 +1105,32 @@ async def get_student_test_review(test_id: int, oquvchi_id: int):
                 FROM savollar WHERE id IN ({placeholders})
             """, tuple(savol_ids))
             for r in cursor.fetchall():
-                savollar_baza[r[0]] = {
+                savollar_baza[int(r[0])] = {
                     "matn": r[1],
                     "A": r[2], "B": r[3], "C": r[4], "D": r[5],
-                    "togri": str(r[6]).strip().upper()
+                    "togri": str(r[6]).strip().upper() if r[6] else ""
                 }
 
         natija_savollar = []
         for s in paketi:
+            if not isinstance(s, dict): continue
             sid = s.get("savol_id")
-            baza_s = savollar_baza.get(sid, {})
-            belgilangan_harf = str(javoblar.get(str(sid), "")).strip().upper()
+            try: sid_int = int(sid)
+            except: sid_int = 0
+
+            baza_s = savollar_baza.get(sid_int, {})
+
+            v_map = {}
+            if "variantlar" in s and isinstance(s["variantlar"], list):
+                for v in s["variantlar"]:
+                    if isinstance(v, dict) and "kalit" in v:
+                        v_map[str(v.get("kalit")).upper()] = v.get("matn", "")
+
+            belgilangan_harf = str(javoblar.get(str(sid), javoblar.get(sid_int, ""))).strip().upper()
             togri_harf = baza_s.get("togri", "")
 
-            belgilangan_matn = baza_s.get(belgilangan_harf, "")
-            togri_matn = baza_s.get(togri_harf, "")
+            belgilangan_matn = baza_s.get(belgilangan_harf, v_map.get(belgilangan_harf, ""))
+            togri_matn = baza_s.get(togri_harf, v_map.get(togri_harf, ""))
             togrimi = bool(belgilangan_harf and togri_harf and belgilangan_harf == togri_harf)
 
             natija_savollar.append({
