@@ -43,9 +43,12 @@
         .btn-done { background: #e0e7ff; color: #4338ca; }
         .timer-box { background: #fffbeb; color: #b45309; padding: 10px 14px; border-radius: 10px; font-weight: 800; font-size: 14px; text-align: center; border: 1.5px dashed #f59e0b; }
 
-        /* Modal uslublari */
+        /* Tahlil kartochkasi */
         .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
+        .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 750px; width: 90%; max-height: 85vh; overflow-y: auto; }
+        .tahlil-savol-kartochka { border-radius: 14px; padding: 18px; margin-bottom: 15px; text-align: left; border: 1.5px solid #e2e8f0; }
+        .tahlil-savol-kartochka.togri { background: #f0fdf4; border-color: #86efac; }
+        .tahlil-savol-kartochka.xato { background: #fef2f2; border-color: #fca5a5; }
     </style>
 </head>
 <body>
@@ -78,6 +81,13 @@
                 <option value="Informatika">Informatika</option>
                 <option value="Matematika">Matematika</option>
                 <option value="Fizika">Fizika</option>
+                <option value="Kimyo">Kimyo</option>
+                <option value="Biologiya">Biologiya</option>
+                <option value="Ingliz tili">Ingliz tili</option>
+                <option value="Ona tili">Ona tili va adabiyot</option>
+                <option value="Tarix">Tarix</option>
+                <option value="Geografiya">Geografiya</option>
+                <option value="Huquq">Huquq</option>
             </select>
         </div>
 
@@ -108,9 +118,9 @@
     <!-- SAVOLLAR VA XATOLAR TAHLILI MODALI -->
     <div class="modal" id="tahlilModal">
         <div class="modal-box">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: #4338ca;">🔍 Test Savollari va Xatolar Tahlili</h3>
-                <button onclick="document.getElementById('tahlilModal').style.display='none'" style="border: none; background: #fee2e2; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-weight: 800; cursor: pointer;">✕ Yopish</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 12px;">
+                <h3 style="color: #4338ca;">🔍 Savollar va To‘g‘ri Javoblar Tahlili</h3>
+                <button onclick="document.getElementById('tahlilModal').style.display='none'" style="border: none; background: #fee2e2; color: #dc2626; padding: 6px 14px; border-radius: 8px; font-weight: 800; cursor: pointer;">✕ Yopish</button>
             </div>
             <div id="tahlilSavollarJoyi"></div>
         </div>
@@ -142,9 +152,15 @@
                     if (t.ishlangan) {
                         tugma = `
                             <div class="btn-action btn-done" style="margin-bottom: 6px;">✅ Ishlangan: ${t.toplagan_ball} ball</div>
-                            <button onclick="korishTahlil(${t.id})" style="width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                                👁️ Xatolar Tahlilini Ko‘rish
-                            </button>
+                            ${t.javoblar_ochiq ? `
+                                <button onclick="korishTahlil(\${t.id})" style="width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                    👁️ Xatolar Tahlilini Ko‘rish
+                                </button>
+                            ` : `
+                                <div style="font-size: 12px; color: #64748b; text-align: center; margin-top: 5px; font-weight: 600;">
+                                    🔒 Ustoz javoblarni hali ochmagan
+                                </div>
+                            `}
                         `;
                     } else if (t.holat === "kutilmoqda" && t.boshlanish_vaqti) {
                         tugma = `
@@ -196,13 +212,21 @@
                     box.innerHTML = `<p style="padding: 15px; color: #64748b; text-align: center;">Tahlil qilish uchun savollar topilmadi.</p>`;
                 } else {
                     box.innerHTML = data.savollar.map((s, i) => `
-                        <div style="background: ${s.togrimi ? '#f0fdf4' : '#fef2f2'}; border: 1.5px solid ${s.togrimi ? '#86efac' : '#fca5a5'}; border-radius: 12px; padding: 14px; margin-bottom: 12px; text-align: left;">
-                            <div style="font-weight: 700; color: #1e1b4b; font-size: 14px; margin-bottom: 8px;">
+                        <div class="tahlil-savol-kartochka ${s.togrimi ? 'togri' : 'xato'}">
+                            <div style="font-weight: 800; color: #1e1b4b; font-size: 15px; margin-bottom: 10px; line-height: 1.4;">
                                 ${i + 1}. ${s.savol_matni}
                             </div>
-                            <div style="font-size: 13px; font-weight: 700; display: flex; gap: 15px; flex-wrap: wrap;">
-                                <span>Sizning javobingiz: <b style="color: ${s.togrimi ? '#16a34a' : '#dc2626'}; font-size: 15px;">${s.belgilangan}</b></span>
-                                <span>To‘g‘ri javob: <b style="color: #16a34a; font-size: 15px;">${s.togri_javob}</b></span>
+                            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px;">
+                                <div style="color: ${s.togrimi ? '#15803d' : '#b91c1c'}; font-weight: 700;">
+                                    ${s.togrimi ? '✅' : '❌'} Siz belgilagan javob: 
+                                    <b>${s.belgilangan_harf}) ${s.belgilangan_matn || ''}</b>
+                                </div>
+                                ${!s.togrimi ? `
+                                    <div style="color: #15803d; font-weight: 700;">
+                                        ✔️ Asl to‘g‘ri javob: 
+                                        <b>${s.togri_harf})${s.togri_matn || ''}</b>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                     `).join('');
