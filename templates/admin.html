@@ -5,13 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin Boshqaruv Markazi | Qorako‘l Ziyo</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        if (sessionStorage.getItem("admin_auth") !== "super_admin_2026") {
+            window.location.href = "/admin-login";
+        }
+        function chiqish() {
+            sessionStorage.removeItem("admin_auth");
+            window.location.href = "/admin-login";
+        }
+    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: #0f172a; color: #f8fafc; min-height: 100vh; padding-bottom: 60px; }
         .header { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #1e293b; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; }
         .logo { font-weight: 800; font-size: 18px; color: #38bdf8; }
         .btn-exit { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
-        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
         .admin-card { background: #1e293b; border-radius: 16px; padding: 24px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
         .card-header { font-size: 17px; font-weight: 800; color: #f8fafc; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 15px; }
@@ -23,11 +32,19 @@
         .btn-yellow { width: 100%; background: #f59e0b; color: #0f172a; border: none; padding: 13px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; }
         .btn-green { width: 100%; background: #10b981; color: white; border: none; padding: 13px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; }
         .table-wrap { width: 100%; overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; min-width: 750px; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; min-width: 850px; font-size: 13px; }
         th { background: #0f172a; color: #94a3b8; padding: 12px 14px; text-align: left; font-weight: 700; }
         td { padding: 12px 14px; border-bottom: 1px solid #334155; }
         .badge-fan { background: #1e3a8a; color: #93c5fd; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; }
-        .btn-sm-del { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+        
+        /* Amallar tugmalari */
+        .btn-action-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .btn-sm-del { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; padding: 5px 10px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
+        .btn-sm-del:hover { background: #991b1b; color: white; }
+        .btn-sm-warn { background: #78350f; color: #fde68a; border: 1px solid #b45309; padding: 5px 10px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
+        .btn-sm-warn:hover { background: #b45309; color: white; }
+        .btn-sm-blue { background: #1e3a8a; color: #bfdbfe; border: 1px solid #2563eb; padding: 5px 10px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; text-decoration: none; }
+        .btn-sm-blue:hover { background: #2563eb; color: white; }
         .btn-sm-ok { background: #065f46; color: #a7f3d0; border: 1px solid #059669; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; }
     </style>
 </head>
@@ -136,7 +153,7 @@
                 <div class="form-grid">
                     <div class="input-group">
                         <label>O‘qituvchi F.I.O:</label>
-                        <input type="text" id="o_fio" placeholder="Masalan: Yozilov Madiyor" required>
+                        <input type="text" id="o_fio" placeholder="Masalan: Karimov Alisher" required>
                     </div>
                     <div class="input-group">
                         <label>Biriktirilgan fan:</label>
@@ -175,7 +192,7 @@
                             <th>FAN</th>
                             <th>LOGIN</th>
                             <th>PAROL</th>
-                            <th>BOSHQARUV</th>
+                            <th>BOSHQARUV AMALLARI</th>
                         </tr>
                     </thead>
                     <tbody id="oqituvchilarTable">
@@ -197,7 +214,7 @@
                             <th>TELEFON</th>
                             <th>SINF VA MAKTAB</th>
                             <th>PAROL</th>
-                            <th>AMALLAR</th>
+                            <th>BOSHQARUV AMALLARI</th>
                         </tr>
                     </thead>
                     <tbody id="oquvchilarTable">
@@ -321,6 +338,7 @@
             } catch(e) { alert("Xatolik!"); }
         }
 
+        // --- O'QITUVCHILAR BOSHQARUVI ---
         async function yuklashOqituvchilar() {
             try {
                 const res = await fetch("/api/admin/oqituvchilar");
@@ -332,21 +350,48 @@
                             <td>#${o.id}</td>
                             <td style="font-weight: 700;">${o.fio}</td>
                             <td><span class="badge-fan">${o.fan}</span></td>
-                            <td>${o.login}</td>
-                            <td>${o.parol}</td>
-                            <td><button onclick="ochirishOqituvchi(${o.id})" class="btn-sm-del">O‘chirish</button></td>
+                            <td><code>${o.login}</code></td>
+                            <td><b style="color: #fbbf24;">${o.parol}</b></td>
+                            <td>
+                                <div class="btn-action-group">
+                                    <button onclick="kirishOqituvchiKabinet(${o.id}, '${o.fio.replace(/'/g, "\\'")}', '${o.fan}')" class="btn-sm-blue">🚪 Kabinetiga kirish</button>
+                                    <button onclick="almashtirOqituvchiParol(${o.id})" class="btn-sm-warn">🔑 Parol</button>
+                                    <button onclick="ochirishOqituvchi(${o.id})" class="btn-sm-del">🗑️ O‘chirish</button>
+                                </div>
+                            </td>
                         </tr>
                     `).join('');
                 }
             } catch(e) {}
         }
 
+        function kirishOqituvchiKabinet(id, fio, fan) {
+            sessionStorage.setItem("oqituvchi_auth", JSON.stringify({ id: id, fio: fio, fan: fan }));
+            window.open("/oqituvchi", "_blank");
+        }
+
+        async function almashtirOqituvchiParol(id) {
+            const yangi = prompt("O‘qituvchi uchun yangi parolni kiriting:");
+            if (!yangi || !yangi.trim()) return;
+            try {
+                const res = await fetch(`/api/admin/oqituvchi_parol/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ yangi_parol: yangi.trim() })
+                });
+                const d = await res.json();
+                alert(d.xabar || "Parol yangilandi!");
+                yuklashOqituvchilar();
+            } catch(e) { alert("Xatolik!"); }
+        }
+
         async function ochirishOqituvchi(id) {
-            if (!confirm("O‘qituvchini o‘chirasizmi?")) return;
+            if (!confirm("O‘qituvchini butunlay tizimdan o‘chirasizmi?")) return;
             await fetch(`/api/admin/oqituvchi_ochirish/${id}`, { method: 'DELETE' });
             yuklashOqituvchilar();
         }
 
+        // --- O'QUVCHILAR BOSHQARUVI ---
         async function yuklashOquvchilar() {
             try {
                 const res = await fetch("/api/admin/oquvchilar");
@@ -358,22 +403,61 @@
                             <td>#${o.id}</td>
                             <td style="font-weight: 700; color: #38bdf8;">${o.fio}</td>
                             <td>${o.telefon}</td>
-                            <td>${o.sinf}-sinf, ${o.maktab}</td>
-                            <td>${o.parol}</td>
-                            <td><button onclick="ochirishOquvchi(${o.id})" class="btn-sm-del">O‘chirish</button></td>
+                            <td>${o.sinf}-sinf, ${o.maktab} (${o.viloyat || ''})</td>
+                            <td><b style="color: #fbbf24;">${o.parol}</b></td>
+                            <td>
+                                <div class="btn-action-group">
+                                    <button onclick="kirishOquvchiKabinet(${o.id}, '${o.fio.replace(/'/g, "\\'")}', ${o.sinf}, '${(o.viloyat || '').replace(/'/g, "\\'")}', '${(o.maktab || '').replace(/'/g, "\\'")}')" class="btn-sm-blue">🚪 Kabinetiga kirish</button>
+                                    <button onclick="almashtirOquvchiParol(${o.id})" class="btn-sm-warn">🔑 Parol</button>
+                                    <button onclick="tozalashOquvchiTarix(${o.id})" class="btn-sm-warn" style="background:#581c87; border-color:#9333ea; color:#f3e8ff;">🧹 Tarixni tozalash</button>
+                                    <button onclick="ochirishOquvchi(${o.id})" class="btn-sm-del">🗑️ O‘chirish</button>
+                                </div>
+                            </td>
                         </tr>
                     `).join('');
                 }
             } catch(e) {}
         }
 
+        function kirishOquvchiKabinet(id, fio, sinf, viloyat, maktab) {
+            sessionStorage.setItem("user_info", JSON.stringify({
+                id: id, fio: fio, sinf: sinf, viloyat: viloyat, maktab: maktab
+            }));
+            localStorage.setItem("oquvchi_id", id);
+            window.open("/kabinet", "_blank");
+        }
+
+        async function almashtirOquvchiParol(id) {
+            const yangi = prompt("O‘quvchi uchun yangi parolni kiriting:");
+            if (!yangi || !yangi.trim()) return;
+            try {
+                const res = await fetch(`/api/admin/oquvchi_parol/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ yangi_parol: yangi.trim() })
+                });
+                const d = await res.json();
+                alert(d.xabar || "Parol yangilandi!");
+                yuklashOquvchilar();
+            } catch(e) { alert("Xatolik!"); }
+        }
+
+        async function tozalashOquvchiTarix(id) {
+            if (!confirm("O‘quvchining barcha yig‘gan ballari va topshirgan testlar tarixini tozalashni xohlaysizmi?")) return;
+            try {
+                const res = await fetch(`/api/admin/oquvchi_tarix_tozalash/${id}`, { method: "DELETE" });
+                const d = await res.json();
+                alert(d.xabar || "Tarix tozalandi!");
+            } catch(e) { alert("Xatolik!"); }
+        }
+
         async function ochirishOquvchi(id) {
-            if (!confirm("O‘quvchini tizimdan o‘chirasizmi?")) return;
+            if (!confirm("O‘quvchini tizimdan butunlay o‘chirasizmi?")) return;
             await fetch(`/api/admin/oquvchi_ochirish/${id}`, { method: 'DELETE' });
             yuklashOquvchilar();
         }
 
-        // Boshlanishida barchasini mustaqil chaqirish
+        // Boshlang'ich yuklash
         yuklashTolovlar();
         yuklashImtihonlar();
         yuklashOqituvchilar();
