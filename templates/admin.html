@@ -475,12 +475,15 @@
             yuklashOquvchilar();
         }
 
-        window.addEventListener("DOMContentLoaded", () => {
+        function yuklashHammasi() {
             yuklashTolovlar();
             yuklashImtihonlar();
             yuklashOqituvchilar();
             yuklashOquvchilar();
-        });
+        }
+
+        window.addEventListener("DOMContentLoaded", yuklashHammasi);
+        yuklashHammasi();
     </script>
 </body>
 </html>
