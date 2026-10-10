@@ -17,76 +17,47 @@
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #fdf2f8 100%);
-            color: #1e293b; 
-            min-height: 100vh; 
-            padding-bottom: 50px; 
-        }
-
-        .header { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #e0e7ff; 
-            padding: 16px 30px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
+        body { background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #fdf2f8 100%); color: #1e293b; min-height: 100vh; padding-bottom: 50px; }
+        .header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #e0e7ff; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
         .logo { font-weight: 800; font-size: 18px; color: #4338ca; }
-        .nav-actions { display: flex; align-items: center; gap: 12px; }
         .btn-exit { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
-        
-        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
-        .card { 
-            background: #ffffff; 
-            border-radius: 20px; 
-            padding: 30px; 
-            border: 1px solid rgba(224, 231, 255, 0.8); 
-            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.05); 
-            margin-bottom: 25px; 
-        }
+        .container { max-width: 1150px; margin: 30px auto; padding: 0 20px; }
+        .card { background: #ffffff; border-radius: 20px; padding: 30px; border: 1px solid rgba(224, 231, 255, 0.8); box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.05); margin-bottom: 25px; }
         h2 { font-size: 20px; font-weight: 800; color: #1e1b4b; margin-bottom: 18px; }
-
         .tabs-header { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap; }
         .main-tab { background: #f1f5f9; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; color: #475569; transition: 0.2s; }
         .main-tab.active { background: #4f46e5; color: white; }
-
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 15px; }
         .input-group { display: flex; flex-direction: column; gap: 6px; }
         label { font-size: 13px; font-weight: 700; color: #334155; }
         input, select, textarea { padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; background: white; }
         input:focus, select:focus, textarea:focus { border-color: #6366f1; }
-        
-        .btn-submit { background: #4f46e5; color: white; border: none; padding: 13px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-submit:hover { background: #4338ca; }
-
+        .btn-submit { background: #4f46e5; color: white; border: none; padding: 13px 24px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
         .upload-subbox { background: #f8fafc; border: 2px dashed #c7d2fe; border-radius: 14px; padding: 25px; text-align: center; margin-top: 15px; }
         .test-card-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .badge { padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 12px; }
         .badge-kunlik { background: #e0f2fe; color: #0369a1; }
         .badge-haftalik { background: #fef3c7; color: #b45309; }
         .badge-oylik { background: #dcfce7; color: #15803d; }
+
+        /* Modal uslublari */
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-box { background: white; border-radius: 20px; padding: 28px; max-width: 900px; width: 95%; max-height: 85vh; overflow-y: auto; }
+        .btn-sm-action { padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; border: none; }
     </style>
 </head>
 <body>
 
     <header class="header">
         <div class="logo">👨‍🏫 Ustoz Ishchi Markazi | <span id="ustozIsm" style="color: #4f46e5;">-</span></div>
-        <div class="nav-actions">
-            <button class="btn-exit" onclick="chiqish()">🚪 Chiqish</button>
-        </div>
+        <button class="btn-exit" onclick="chiqish()">🚪 Chiqish</button>
     </header>
 
     <div class="container">
 
-        <!-- ASOSIY TABLAR -->
         <div class="tabs-header">
             <button class="main-tab active" onclick="ochishTab('yangiTestTab', this)">➕ 1. Yangi Test Yaratish</button>
-            <button class="main-tab" onclick="ochishTab('savollarYuklashTab', this)">📥 2. Savollar Bankini To‘ldirish (3 xil usul)</button>
+            <button class="main-tab" onclick="ochishTab('savollarYuklashTab', this)">📥 2. Savollar Bankini To‘ldirish</button>
             <button class="main-tab" onclick="ochishTab('testlarBoshqaruvTab', this)">📋 3. Mening Testlarim & Boshqaruv</button>
         </div>
 
@@ -129,14 +100,14 @@
                         <input type="number" id="test_daqiqa" value="30" required min="5" max="180">
                     </div>
                     <div class="input-group">
-                        <label>Qatnashish narxi (so‘mda, bepul bo‘lsa 0 qoldiring):</label>
+                        <label>Qatnashish narxi (so‘mda, bepul bo‘lsa 0):</label>
                         <input type="number" id="test_narxi" value="0" min="0" step="1000">
                     </div>
-                    <div class="input-group" id="boshlanishVaqtiBox">
+                    <div class="input-group">
                         <label>Boshlanish sanasi va vaqti:</label>
                         <input type="datetime-local" id="test_bosh_v">
                     </div>
-                    <div class="input-group" id="tugashVaqtiBox">
+                    <div class="input-group">
                         <label>Tugash sanasi va vaqti:</label>
                         <input type="datetime-local" id="test_tug_v">
                     </div>
@@ -145,107 +116,50 @@
             </form>
         </div>
 
-        <!-- 2-TAB: SAVOLLAR YUKLASH (3 USUL) -->
+        <!-- 2-TAB: SAVOLLAR YUKLASH -->
         <div class="card" id="savollarYuklashTab" style="display: none;">
-            <h2>📥 Savollar Bankini To‘ldirish (100 tagacha savol)</h2>
+            <h2>📥 Savollar Bankini To‘ldirish</h2>
             <div style="margin-bottom: 20px;">
                 <label style="font-size: 14px; font-weight: 800;">Qaysi test uchun savol yuklamoqchisiz?</label>
                 <select id="tanlanganTestSelect" style="width: 100%; margin-top: 6px; font-weight: 700; color: #4338ca;"></select>
             </div>
 
-            <!-- USUL TANLASH TUGMALARI -->
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <button type="button" class="main-tab active" id="btnUsulMatn" onclick="almashtirUsul('matn')">📋 1-Usul: Matndan nusxalash</button>
-                <button type="button" class="main-tab" id="btnUsulExcel" onclick="almashtirUsul('excel')">📊 2-Usul: Excel jadval yuklash</button>
+                <button type="button" class="main-tab" id="btnUsulExcel" onclick="almashtirUsul('excel')">📊 2-Usul: Excel jadval</button>
                 <button type="button" class="main-tab" id="btnUsulYakka" onclick="almashtirUsul('yakka')">✍️ 3-Usul: Bittalab kiritish</button>
             </div>
 
-            <!-- 1-USUL: MATN (PARSER) -->
             <div class="upload-subbox" id="usulMatnBox">
-                <p style="font-size: 13px; color: #475569; margin-bottom: 10px; text-align: left;">
-                    Testlaringizni quyidagi formatda Word yoki Telegramdan nusxalab shu maydonga tashlang:<br>
-                    <code>1. Savol matni?<br>A) Variant 1<br>B) Variant 2<br>C) Variant 3<br>D) Variant 4<br>Javob: A</code>
-                </p>
-                <textarea id="matnTestlar" rows="10" placeholder="Savollarni shu yerga joylang..." style="width: 100%; font-family: monospace;"></textarea>
-                <button type="button" onclick="yuklashMatnSavollar()" class="btn-submit" style="margin-top: 15px;">⚡ Avtomatik Ajratib Bazaga Saqlash</button>
+                <textarea id="matnTestlar" rows="8" placeholder="1. Savol?&#10;A) Variant 1&#10;B) Variant 2&#10;C) Variant 3&#10;D) Variant 4&#10;Javob: A" style="width: 100%; font-family: monospace;"></textarea>
+                <button type="button" onclick="yuklashMatnSavollar()" class="btn-submit" style="margin-top: 15px;">⚡ Bazaga Saqlash</button>
             </div>
 
-            <!-- 2-USUL: EXCEL -->
-            <div class="upload-subbox" id="usulExcelBox" style="display: none; padding: 20px; background: #f8fafc; border: 2px dashed #6366f1; border-radius: 12px; text-align: center;">
-                <div style="margin-bottom: 15px;">
-                    <p style="font-size: 14px; color: #3730a3; font-weight: 800; margin-bottom: 6px;">
-                        Excel fayl ustunlari tartibi qat'iy quyidagicha bo‘lishi shart:
-                    </p>
-                    <code style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 13px;">
-                        savol | a | b | c | d | javob
-                    </code>
-                </div>
-
-                <!-- Obrazets jadvali -->
-                <div style="overflow-x: auto; margin-bottom: 18px;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; text-align: left;">
-                        <thead>
-                            <tr style="background: #e0e7ff; color: #1e1b4b;">
-                                <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">savol</th>
-                                <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">a</th>
-                                <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">b</th>
-                                <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">c</th>
-                                <th style="padding: 8px 10px; border: 1px solid #cbd5e1;">d</th>
-                                <th style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center;">javob</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 8px 10px; border: 1px solid #cbd5e1; font-weight: 600;">Kompyuterning asosiy miyasi nima?</td>
-                                <td style="padding: 8px 10px; border: 1px solid #cbd5e1;">Monitor</td>
-                                <td style="padding: 8px 10px; border: 1px solid #cbd5e1;">Sichqoncha</td>
-                                <td style="padding: 8px 10px; border: 1px solid #cbd5e1; background: #dcfce7; font-weight: 700; color: #166534;">Protsessor (CPU)</td>
-                                <td style="padding: 8px 10px; border: 1px solid #cbd5e1;">Klaviatura</td>
-                                <td style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: 800; color: #15803d;">C</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div style="margin-bottom: 18px;">
-                    <button type="button" onclick="namunaExcelYuklabOlish()" style="background: #0284c7; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;">
-                        📥 Namunaviy Shablonni Yuklab Olish (.csv / Excel)
-                    </button>
-                </div>
-
-                <div style="margin-bottom: 15px;">
-                    <input type="file" id="faylSavollarExcel" accept=".xlsx, .xls, .csv" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: white;">
-                </div>
-                
+            <div class="upload-subbox" id="usulExcelBox" style="display: none;">
+                <button type="button" onclick="namunaExcelYuklabOlish()" style="background: #0284c7; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 15px;">
+                    📥 Shablonni Yuklab Olish (.csv)
+                </button><br>
+                <input type="file" id="faylSavollarExcel" accept=".xlsx, .xls, .csv" style="margin-bottom: 15px;"><br>
                 <button type="button" onclick="yuklashExcelSavollar()" class="btn-submit">📤 Exceldan Yuklash</button>
             </div>
 
-            <!-- 3-USUL: YAKKA KIRITISH -->
             <div class="upload-subbox" id="usulYakkaBox" style="display: none; text-align: left;">
-                <div class="input-group" style="margin-bottom: 12px;">
-                    <label>Savol matni:</label>
-                    <textarea id="yakka_savol" rows="3" placeholder="Savolni yozing..."></textarea>
-                </div>
+                <div class="input-group" style="margin-bottom: 12px;"><label>Savol matni:</label><textarea id="yakka_savol" rows="3"></textarea></div>
                 <div class="form-grid">
                     <div class="input-group"><label>A varianti:</label><input type="text" id="yakka_a"></div>
                     <div class="input-group"><label>B varianti:</label><input type="text" id="yakka_b"></div>
                     <div class="input-group"><label>C varianti:</label><input type="text" id="yakka_c"></div>
                     <div class="input-group"><label>D varianti:</label><input type="text" id="yakka_d"></div>
                 </div>
-                <div class="input-group" style="max-width: 250px; margin-bottom: 15px;">
-                    <label>To‘g‘ri javob kaliti:</label>
-                    <select id="yakka_togri">
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                    </select>
+                <div class="input-group" style="max-width: 200px; margin-bottom: 15px;">
+                    <label>To‘g‘ri javob:</label>
+                    <select id="yakka_togri"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
                 </div>
                 <button type="button" onclick="yuklashYakkaSavol()" class="btn-submit">💾 Savolni Saqlash</button>
             </div>
         </div>
 
-        <!-- 3-TAB: TESTLARNI BOSHQARISH -->
+        <!-- 3-TAB: TESTLARNI BOSHQARISH & STATISTIKA -->
         <div class="card" id="testlarBoshqaruvTab" style="display: none;">
             <h2>📋 Siz Yaratgan Testlar Ro‘yxati</h2>
             <div id="ustozTestlarRoyxati">Yuklanmoqda...</div>
@@ -253,9 +167,78 @@
 
     </div>
 
+    <!-- 1. STATISTIKA VA JONLI MONITORING MODALI -->
+    <div class="modal" id="statistikaModal">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 id="statistikaSarlavha" style="color: #4338ca;">📊 Test Statistikasi & O‘quvchilar Tahlili</h3>
+                <button onclick="yopishModal('statistikaModal')" style="border: none; background: #fee2e2; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-weight: 800; cursor: pointer;">✕ Yopish</button>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; text-align: left; color: #475569;">
+                            <th style="padding: 10px;">O‘quvchi</th>
+                            <th>Telefon / Maktab</th>
+                            <th>Ball</th>
+                            <th>Vaqt</th>
+                            <th>Holati</th>
+                            <th>Amal / Monitoring</th>
+                        </tr>
+                    </thead>
+                    <tbody id="statistikaTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. TESTNI TAHRIRLASH MODALI -->
+    <div class="modal" id="tahrirModal">
+        <div class="modal-box" style="max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #4338ca;">✏️ Test Ma'lumotlarini Tahrirlash</h3>
+                <button onclick="yopishModal('tahrirModal')" style="border: none; background: #fee2e2; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-weight: 800; cursor: pointer;">✕ Yopish</button>
+            </div>
+            <form onsubmit="saqlashTahrirTest(event)">
+                <input type="hidden" id="edit_test_id">
+                <div class="input-group" style="margin-bottom: 12px;">
+                    <label>Test nomi:</label>
+                    <input type="text" id="edit_nomi" required>
+                </div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Sinf:</label>
+                        <select id="edit_sinf">
+                            <option value="5">5-sinf</option><option value="6">6-sinf</option><option value="7">7-sinf</option>
+                            <option value="8">8-sinf</option><option value="9">9-sinf</option><option value="10">10-sinf</option><option value="11">11-sinf</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Turi:</label>
+                        <select id="edit_turi">
+                            <option value="kunlik">Kunlik</option><option value="haftalik">Haftalik</option><option value="oylik">Oylik</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Daqiqa:</label>
+                        <input type="number" id="edit_daqiqa" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Narxi (so‘m):</label>
+                        <input type="number" id="edit_narxi" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" style="width: 100%;">💾 Saqlash</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         document.getElementById("ustozIsm").innerText = `${ustozData.fio} (${ustozData.fan})`;
         document.getElementById("test_fan").value = ustozData.fan || "Informatika";
+
+        function yopishModal(id) { document.getElementById(id).style.display = "none"; }
 
         function ochishTab(tabId, btn) {
             document.querySelectorAll(".card").forEach(c => c.style.display = "none");
@@ -277,18 +260,12 @@
         }
 
         function namunaExcelYuklabOlish() {
-            const csvTarkibi = "savol,a,b,c,d,javob\n" +
-                "\"Kompyuterning asosiy miyasi nima?\",\"Monitor\",\"Sichqoncha\",\"Protsessor (CPU)\",\"Klaviatura\",\"C\"\n" +
-                "\"1 Bayt necha bitga teng?\",\"8 bit\",\"16 bit\",\"1024 bit\",\"4 bit\",\"A\"\n" +
-                "\"Qaysi biri operatsion sistema emas?\",\"Windows\",\"Python dasturlash tili\",\"Linux\",\"macOS\",\"B\"";
-
-            const blob = new Blob(["\uFEFF" + csvTarkibi], { type: "text/csv;charset=utf-8;" });
-            const havola = document.createElement("a");
-            havola.href = URL.createObjectURL(blob);
-            havola.download = "test_savollari_namuna.csv";
-            document.body.appendChild(havola);
-            havola.click();
-            document.body.removeChild(havola);
+            const csv = "savol,a,b,c,d,javob\n\"Kompyuter miyasi nima?\",\"Monitor\",\"Sichqoncha\",\"Protsessor\",\"Klaviatura\",\"C\"";
+            const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "shablon.csv";
+            link.click();
         }
 
         async function yaratishTest(e) {
@@ -305,119 +282,171 @@
                 yaratuvchi_id: ustozData.id || 1
             };
 
-            try {
-                const res = await fetch("/api/admin/online_test_yaratish", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
-                });
-                const javob = await res.json();
-                if (res.ok) {
-                    alert("✅ Test yaratildi! Endi 2-bo‘lim orqali unga savollar yuklashingiz mumkin.");
-                    document.getElementById("yangiTestForm").reset();
-                    document.getElementById("test_fan").value = ustozData.fan;
-                } else {
-                    alert("❌ " + (javob.xatolik || "Xatolik yuz berdi!"));
-                }
-            } catch (err) { alert("❌ Aloqa uzildi!"); }
+            const res = await fetch("/api/admin/online_test_yaratish", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const d = await res.json();
+            alert(d.xabar || "Test yaratildi!");
+            document.getElementById("yangiTestForm").reset();
+            document.getElementById("test_fan").value = ustozData.fan;
         }
 
         async function yuklashUstozTestlari() {
-            try {
-                const res = await fetch(`/api/testlar/royxat?fan=${encodeURIComponent(ustozData.fan)}`);
-                const data = await res.json();
-                const testlar = data.testlar || [];
+            const res = await fetch(`/api/testlar/royxat?fan=${encodeURIComponent(ustozData.fan)}`);
+            const data = await res.json();
+            const testlar = data.testlar || [];
 
-                // Selectga ID si bilan aniq yoziladi, adashib ketmaslik uchun
-                const select = document.getElementById("tanlanganTestSelect");
-                select.innerHTML = testlar.map(t => `<option value="${t.id}">[ID: ${t.id}] ${t.nomi} (${t.sinf}-sinf, ${t.turi}) - ${t.savollar_soni || 0} ta savol</option>`).join('');
+            const select = document.getElementById("tanlanganTestSelect");
+            select.innerHTML = testlar.map(t => `<option value="${t.id}">[ID: ${t.id}] ${t.nomi} (${t.sinf}-sinf) - ${t.savollar_soni || 0} ta savol</option>`).join('');
 
-                // 3-tabga chiqarish
-                const container = document.getElementById("ustozTestlarRoyxati");
-                if (testlar.length === 0) {
-                    container.innerHTML = "<p style='color:#64748b;'>Hali hech qanday test yaratilmagan.</p>";
-                    return;
-                }
+            const container = document.getElementById("ustozTestlarRoyxati");
+            if (testlar.length === 0) {
+                container.innerHTML = "<p style='color:#64748b;'>Hali hech qanday test yaratilmagan.</p>";
+                return;
+            }
 
-                container.innerHTML = testlar.map(t => `
-                    <div class="test-card-item">
-                        <div>
-                            <span class="badge badge-${t.turi}">${t.turi.toUpperCase()}</span>
-                            <b style="font-size: 15px; margin-left: 8px;">[ID: ${t.id}] ${t.nomi}</b>
-                            <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
-                                Sinf: ${t.sinf}-sinf | Savollar: <b style="color: #4338ca;">${t.savollar_soni || 0} ta</b> | Vaqt: ${t.davomiyligi_daqiqa} daq | Narxi: ${t.narxi > 0 ? t.narxi + " so‘m" : "Bepul"}
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                            <button onclick="ochishJavoblar(${t.id}, ${!t.javoblar_ochiq})" style="background: ${t.javoblar_ochiq ? '#ef4444' : '#10b981'}; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;">
-                                ${t.javoblar_ochiq ? "🔒 Javoblarni Yopish" : "🔓 To‘g‘ri Javoblarni Ochish"}
-                            </button>
-                            <button onclick="ochirishTest(${t.id})" style="background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;">
-                                🗑️ O‘chirish
-                            </button>
+            container.innerHTML = testlar.map(t => `
+                <div class="test-card-item">
+                    <div>
+                        <span class="badge badge-${t.turi}">${t.turi.toUpperCase()}</span>
+                        <b style="font-size: 15px; margin-left: 8px;">[ID: ${t.id}] ${t.nomi}</b>
+                        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
+                            Sinf: ${t.sinf}-sinf | Savollar: <b style="color: #4338ca;">${t.savollar_soni || 0} ta</b> | Vaqt: ${t.davomiyligi_daqiqa} daq
                         </div>
                     </div>
-                `).join('');
-            } catch(e) { console.error(e); }
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                        <button onclick="ochishStatistika(${t.id}, '${t.nomi.replace(/'/g, "\\'")}')" class="btn-sm-action" style="background: #3b82f6; color: white;">📊 Statistika & Monitoring</button>
+                        <button onclick="ochishTahrirModal(${t.id}, '${t.nomi.replace(/'/g, "\\'")}', ${t.sinf}, '${t.turi}', ${t.davomiyligi_daqiqa}, ${t.narxi})" class="btn-sm-action" style="background: #f59e0b; color: white;">✏️ Tahrirlash</button>
+                        <button onclick="ochishJavoblar(${t.id}, ${!t.javoblar_ochiq})" class="btn-sm-action" style="background: ${t.javoblar_ochiq ? '#ef4444' : '#10b981'}; color: white;">
+                            ${t.javoblar_ochiq ? "🔒 Javoblarni Yopish" : "🔓 Javoblarni Ochish"}
+                        </button>
+                        <button onclick="ochirishTest(${t.id})" class="btn-sm-action" style="background: #7f1d1d; color: #fca5a5;">🗑️ O‘chirish</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        async function ochirishTest(testId) {
-            if (!confirm("Haqiqatan ham ushbu testni va unga yuklangan barcha savollarni butunlay o‘chirib tashlamoqchimisiz?")) return;
-            try {
-                const res = await fetch(`/api/test/ochirish/${testId}`, { method: 'DELETE' });
-                const d = await res.json();
-                alert(d.xabar);
-                yuklashUstozTestlari();
-            } catch(e) { alert("Xatolik!"); }
+        // STATISTIKA VA JONLI MONITORING
+        async function ochishStatistika(testId, nomi) {
+            document.getElementById("statistikaSarlavha").innerText = `📊 [ID: ${testId}] ${nomi} - Monitoring va Natijalar`;
+            const res = await fetch(`/api/test/statistika/${testId}`);
+            const data = await res.json();
+            const tbody = document.getElementById("statistikaTableBody");
+
+            if (!data.urinishlar || data.urinishlar.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="padding: 15px; text-align: center; color: #94a3b8;">Ushbu testni hali hech kim ishlamagan.</td></tr>`;
+            } else {
+                tbody.innerHTML = data.urinishlar.map(u => {
+                    const realVaqtda = u.holat === 'boshlangan';
+                    const daq = Math.floor(u.sarflangan_soniya / 60);
+                    const son = u.sarflangan_soniya % 60;
+                    return `
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px; font-weight: 700; color: #1e1b4b;">${u.fio}</td>
+                            <td>${u.telefon} | ${u.maktab}</td>
+                            <td style="font-weight: 800; color: ${u.ball > 0 ? '#16a34a' : '#dc2626'}; font-size: 14px;">${u.ball} ball</td>
+                            <td>${daq} daq ${son} son</td>
+                            <td>
+                                <span style="background: ${realVaqtda ? '#fef3c7' : '#dcfce7'}; color: ${realVaqtda ? '#b45309' : '#15803d'}; padding: 3px 8px; border-radius: 6px; font-weight: 700;">
+                                    ${realVaqtda ? '⚡ Hozir ishlamoqda' : '✅ Yakunlagan'}
+                                </span>
+                            </td>
+                            <td>
+                                ${realVaqtda ? `
+                                    <button onclick="chiqaribYuborish(${u.urinish_id},${testId})" class="btn-sm-action" style="background: #dc2626; color: white;">
+                                        🚫 Chiqarib yuborish
+                                    </button>
+                                ` : `
+                                    <button onclick='alert(JSON.stringify(\${JSON.stringify(u.tahlil)}, null, 2))' class="btn-sm-action" style="background: #6366f1; color: white;">
+                                        🔍 Xatolarini ko‘rish
+                                    </button>
+                                `}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById("statistikaModal").style.display = "flex";
         }
 
-        async function ochishJavoblar(testId, ochish) {
-            try {
-                const res = await fetch(`/api/test/javoblarni_ochish/${testId}?ochish=${ochish}`, { method: 'PUT' });
-                const data = await res.json();
-                alert(data.xabar);
-                yuklashUstozTestlari();
-            } catch(e) { alert("Xatolik!"); }
+        async function chiqaribYuborish(urinishId, testId) {
+            if (!confirm("Haqiqatan ham bu o‘quvchini testdan chiqarib yubormoqchimisiz?")) return;
+            const res = await fetch(`/api/test/chiqarib_yuborish/${urinishId}`, { method: 'PUT' });
+            const d = await res.json();
+            alert(d.xabar);
+            ochishStatistika(testId, "Yangilandi");
+        }
+
+        // TAHRIRLASH
+        function ochishTahrirModal(id, nomi, sinf, turi, daqiqa, narxi) {
+            document.getElementById("edit_test_id").value = id;
+            document.getElementById("edit_nomi").value = nomi;
+            document.getElementById("edit_sinf").value = sinf;
+            document.getElementById("edit_turi").value = turi;
+            document.getElementById("edit_daqiqa").value = daqiqa;
+            document.getElementById("edit_narxi").value = narxi;
+            document.getElementById("tahrirModal").style.display = "flex";
+        }
+
+        async function saqlashTahrirTest(e) {
+            e.preventDefault();
+            const id = document.getElementById("edit_test_id").value;
+            const data = {
+                nomi: document.getElementById("edit_nomi").value,
+                sinf: parseInt(document.getElementById("edit_sinf").value),
+                turi: document.getElementById("edit_turi").value,
+                davomiyligi_daqiqa: parseInt(document.getElementById("edit_daqiqa").value),
+                narxi: parseInt(document.getElementById("edit_narxi").value)
+            };
+            const res = await fetch(`/api/test/tahrirlash/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const d = await res.json();
+            alert(d.xabar);
+            yopishModal("tahrirModal");
+            yuklashUstozTestlari();
+        }
+
+        async function ochirishTest(id) {
+            if (!confirm("Test va unga tegishli savollar butunlay o‘chirilsinmi?")) return;
+            const res = await fetch(`/api/test/ochirish/${id}`, { method: 'DELETE' });
+            const d = await res.json();
+            alert(d.xabar);
+            yuklashUstozTestlari();
+        }
+
+        async function ochishJavoblar(id, ochish) {
+            const res = await fetch(`/api/test/javoblarni_ochish/${id}?ochish=${ochish}`, { method: 'PUT' });
+            const d = await res.json();
+            alert(d.xabar);
+            yuklashUstozTestlari();
         }
 
         async function yuklashMatnSavollar() {
-            const testId = document.getElementById("tanlanganTestSelect").value;
+            const id = document.getElementById("tanlanganTestSelect").value;
             const matn = document.getElementById("matnTestlar").value;
-            if (!testId || !matn.trim()) return alert("Testni tanlang va matn kiriting!");
-
-            const fd = new FormData();
-            fd.append("test_id", testId);
-            fd.append("matn", matn);
-
-            try {
-                const res = await fetch("/api/test/savollar_matn_yuklash", { method: "POST", body: fd });
-                const d = await res.json();
-                alert(d.xabar);
-                if (res.ok) {
-                    document.getElementById("matnTestlar").value = "";
-                    yuklashUstozTestlari();
-                }
-            } catch(e) { alert("Xatolik!"); }
+            if (!id || !matn.trim()) return alert("Testni tanlang va matn kiriting!");
+            const fd = new FormData(); fd.append("test_id", id); fd.append("matn", matn);
+            const res = await fetch("/api/test/savollar_matn_yuklash", { method: "POST", body: fd });
+            const d = await res.json(); alert(d.xabar);
+            document.getElementById("matnTestlar").value = "";
+            yuklashUstozTestlari();
         }
 
         async function yuklashExcelSavollar() {
-            const testId = document.getElementById("tanlanganTestSelect").value;
+            const id = document.getElementById("tanlanganTestSelect").value;
             const fayl = document.getElementById("faylSavollarExcel").files[0];
-            if (!testId || !fayl) return alert("Fayl tanlang!");
-
-            const fd = new FormData();
-            fd.append("test_id", testId);
-            fd.append("fayl", fayl);
-
-            try {
-                const res = await fetch("/api/test/savollar_excel_yuklash", { method: "POST", body: fd });
-                const d = await res.json();
-                alert(d.xabar || d.xatolik);
-                if (res.ok) {
-                    document.getElementById("faylSavollarExcel").value = "";
-                    yuklashUstozTestlari();
-                }
-            } catch(e) { alert("Xatolik!"); }
+            if (!id || !fayl) return alert("Fayl tanlang!");
+            const fd = new FormData(); fd.append("test_id", id); fd.append("fayl", fayl);
+            const res = await fetch("/api/test/savollar_excel_yuklash", { method: "POST", body: fd });
+            const d = await res.json(); alert(d.xabar || d.xatolik);
+            document.getElementById("faylSavollarExcel").value = "";
+            yuklashUstozTestlari();
         }
 
         async function yuklashYakkaSavol() {
@@ -430,24 +459,9 @@
                 variant_d: document.getElementById("yakka_d").value,
                 togri_javob: document.getElementById("yakka_togri").value
             };
-
-            try {
-                const res = await fetch("/api/test/savol_qoshish", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
-                });
-                const d = await res.json();
-                alert(d.xabar);
-                if (res.ok) {
-                    document.getElementById("yakka_savol").value = "";
-                    document.getElementById("yakka_a").value = "";
-                    document.getElementById("yakka_b").value = "";
-                    document.getElementById("yakka_c").value = "";
-                    document.getElementById("yakka_d").value = "";
-                    yuklashUstozTestlari();
-                }
-            } catch(e) { alert("Xatolik!"); }
+            const res = await fetch("/api/test/savol_qoshish", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+            const d = await res.json(); alert(d.xabar);
+            yuklashUstozTestlari();
         }
     </script>
 </body>
