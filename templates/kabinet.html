@@ -17,147 +17,35 @@
     </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%); 
-            color: #1e293b; 
-            min-height: 100vh; 
-            padding-bottom: 50px; 
-        }
-
-        .header { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #e2e8f0; 
-            padding: 16px 30px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: sticky;
-            top: 0;
-            z-index: 20;
-        }
+        body { background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%); color: #1e293b; min-height: 100vh; padding-bottom: 50px; }
+        .header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #e2e8f0; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; }
         .logo { font-weight: 800; font-size: 18px; color: #4338ca; }
         .nav-links { display: flex; align-items: center; gap: 15px; }
-        .nav-link { text-decoration: none; color: #475569; font-weight: 700; font-size: 14px; transition: 0.2s; }
-        .nav-link:hover { color: #4338ca; }
+        .nav-link { text-decoration: none; color: #475569; font-weight: 700; font-size: 14px; }
         .btn-exit { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
-
         .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
-        
-        .user-welcome-card {
-            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
-            color: white;
-            border-radius: 20px;
-            padding: 28px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+        .user-welcome-card { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: white; border-radius: 20px; padding: 28px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         .user-welcome-card h1 { font-size: 22px; font-weight: 800; }
-        .user-welcome-card p { opacity: 0.9; font-size: 14px; margin-top: 5px; }
-
-        .filter-bar {
-            background: white;
-            padding: 16px 20px;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .filter-bar select {
-            padding: 10px 16px;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #334155;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .section-title { font-size: 19px; font-weight: 800; color: #1e1b4b; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-
-        .tests-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 18px;
-            margin-bottom: 35px;
-        }
-        .test-box {
-            background: white;
-            border-radius: 16px;
-            padding: 22px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
+        .filter-bar { background: white; padding: 16px 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; }
+        .filter-bar select { padding: 10px 16px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 14px; font-weight: 700; outline: none; }
+        .section-title { font-size: 19px; font-weight: 800; color: #1e1b4b; margin-bottom: 16px; }
+        .tests-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; margin-bottom: 35px; }
+        .test-box { background: white; border-radius: 16px; padding: 22px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; }
         .tb-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .tb-title { font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.4; }
-        
+        .tb-title { font-size: 16px; font-weight: 800; color: #0f172a; }
         .badge { padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 11px; text-transform: uppercase; }
         .badge-kunlik { background: #e0f2fe; color: #0369a1; }
         .badge-haftalik { background: #fef3c7; color: #b45309; }
         .badge-oylik { background: #dcfce7; color: #15803d; }
-
         .tb-info { font-size: 13px; color: #64748b; margin-bottom: 18px; display: flex; flex-direction: column; gap: 4px; }
-        
-        .btn-action {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 14px;
-            text-align: center;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s;
-            text-decoration: none;
-            display: block;
-        }
+        .btn-action { width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; text-align: center; border: none; cursor: pointer; text-decoration: none; display: block; }
         .btn-start { background: #4f46e5; color: white; }
-        .btn-start:hover { background: #4338ca; }
-        .btn-pay { background: #059669; color: white; }
-        .btn-pay:hover { background: #047857; }
-        .btn-locked { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
-        .btn-done { background: #e0e7ff; color: #4338ca; cursor: default; }
+        .btn-done { background: #e0e7ff; color: #4338ca; }
+        .timer-box { background: #fffbeb; color: #b45309; padding: 10px 14px; border-radius: 10px; font-weight: 800; font-size: 14px; text-align: center; border: 1.5px dashed #f59e0b; }
 
-        .timer-box {
-            background: #fffbeb;
-            color: #b45309;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-weight: 800;
-            font-size: 14px;
-            text-align: center;
-            border: 1.5px dashed #f59e0b;
-        }
-
-        /* Modal To'lov */
-        .modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-        .modal-box {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 460px;
-            width: 90%;
-        }
+        /* Modal */
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -173,18 +61,16 @@
 
     <div class="container">
 
-        <!-- FOYDALANUVCHI MA'LUMOTLARI -->
         <div class="user-welcome-card">
             <div>
                 <h1 id="userFio">Xush kelibsiz!</h1>
                 <p id="userMaktab">Viloyat | Maktab | Sinf</p>
             </div>
-            <div style="background: rgba(255,255,255,0.15); padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 14px;">
+            <div style="background: rgba(255,255,255,0.15); padding: 10px 18px; border-radius: 12px; font-weight: 700;">
                 ID: #<span id="userId">-</span>
             </div>
         </div>
 
-        <!-- FAN VA SINF BO'YICHA FILTR -->
         <div class="filter-bar">
             <span style="font-weight: 800; font-size: 14px; color: #3730a3;">📚 Fan tanlang:</span>
             <select id="fanFilter" onchange="yuklashTestlar()">
@@ -192,22 +78,14 @@
                 <option value="Informatika">Informatika</option>
                 <option value="Matematika">Matematika</option>
                 <option value="Fizika">Fizika</option>
-                <option value="Kimyo">Kimyo</option>
-                <option value="Biologiya">Biologiya</option>
-                <option value="Tarix">Tarix</option>
-                <option value="Huquq">Huquq</option>
-                <option value="Ingliz tili">Ingliz tili</option>
-                <option value="Ona tili">Ona tili</option>
             </select>
         </div>
 
-        <!-- TESTLAR RO'YXATI -->
         <div class="section-title">⚡ Foydalanish mumkin bo‘lgan Testlar va Olimpiadalar</div>
         <div class="tests-grid" id="testsContainer">
             <p style="color: #64748b;">Testlar yuklanmoqda...</p>
         </div>
 
-        <!-- AVVALGI NATIJALAR ARXIVI -->
         <div class="section-title">📊 Mening Avvalgi Natijalarim</div>
         <div style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow-x: auto; padding: 15px;">
             <table style="width: 100%; border-collapse: collapse; min-width: 600px; font-size: 14px;">
@@ -221,37 +99,20 @@
                         <th>Sana</th>
                     </tr>
                 </thead>
-                <tbody id="natijalarTable">
-                    <tr><td colspan="6" style="padding: 15px; text-align: center; color: #94a3b8;">Yuklanmoqda...</td></tr>
-                </tbody>
+                <tbody id="natijalarTable"></tbody>
             </table>
         </div>
 
     </div>
 
-    <!-- TO'LOV CHEKI YUKLASH MODALI -->
-    <div class="modal" id="payModal">
+    <!-- SAVOLLAR VA XATOLAR TAHLILI MODALI -->
+    <div class="modal" id="tahlilModal">
         <div class="modal-box">
-            <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 10px;">💳 Olimpiada uchun to‘lov</h3>
-            <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 15px;">
-                Ushbu oylik katta olimpiadada qatnashish pullik. To‘lovni quyidagi kartaga o‘tkazib, chek rasmini yuklang:
-            </p>
-            <div style="background: #f1f5f9; padding: 12px; border-radius: 10px; font-weight: 700; color: #3730a3; margin-bottom: 15px; font-size: 14px;">
-                Karta: <b>8600 0000 0000 0000</b><br>
-                Qabul qiluvchi: Qorako‘l Ziyo Rasmiy<br>
-                Summa: <span id="modalSumma">10 000</span> so‘m
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #4338ca;">🔍 Test Savollari va Xatolar Tahlili</h3>
+                <button onclick="document.getElementById('tahlilModal').style.display='none'" style="border: none; background: #fee2e2; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-weight: 800; cursor: pointer;">✕ Yopish</button>
             </div>
-            <form onsubmit="yuborishChek(event)">
-                <input type="hidden" id="modalTestId">
-                <div style="margin-bottom: 15px;">
-                    <label style="font-size: 12px; font-weight: 700; color: #475569;">To‘lov skrinshotini (cheki) tanlang:</label>
-                    <input type="file" id="chekFayl" accept="image/*" required style="width: 100%; margin-top: 5px;">
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn-action btn-pay">📤 Chekni Yuborish</button>
-                    <button type="button" class="btn-action btn-locked" onclick="yopishModal()">Bekor qilish</button>
-                </div>
-            </form>
+            <div id="tahlilSavollarJoyi"></div>
         </div>
     </div>
 
@@ -271,7 +132,7 @@
                 const testlar = data.testlar || [];
 
                 if (testlar.length === 0) {
-                    container.innerHTML = `<div style="grid-column: 1/-1; padding: 30px; text-align: center; color: #94a3b8; background: white; border-radius: 16px;">Hozircha sizning sinfingiz uchun testlar mavjud emas.</div>`;
+                    container.innerHTML = `<div style="grid-column: 1/-1; padding: 30px; text-align: center; color: #94a3b8; background: white; border-radius: 16px;">Hozircha testlar mavjud emas.</div>`;
                     return;
                 }
 
@@ -279,9 +140,14 @@
                     let tugma = "";
 
                     if (t.ishlangan) {
-                        tugma = `<div class="btn-action btn-done">✅ Ishlangan: ${t.toplagan_ball} ball</div>`;
-                    } else if (t.holat === "otkazildi") {
-                        tugma = `<div class="btn-action btn-locked">⛔ O‘tkazib yuborilgan</div>`;
+                        tugma = `
+                            <div class="btn-action btn-done" style="margin-bottom: 6px;">✅ Ishlangan: ${t.toplagan_ball} ball</div>
+                            ${t.javoblar_ochiq ? `
+                                <button onclick="korishTahlil(\${t.id})" style="width: 100%; background: #059669; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                                    👁️ Xatolar Tahlilini Ko‘rish
+                                </button>
+                            ` : ''}
+                        `;
                     } else if (t.holat === "kutilmoqda" && t.boshlanish_vaqti) {
                         tugma = `
                             <div class="timer-box" id="taymer-quti-${t.id}">
@@ -290,7 +156,7 @@
                             </div>
                         `;
                     } else if (!t.tolangan && t.narxi > 0) {
-                        tugma = `<button onclick="ochishTolov(${t.id}, ${t.narxi})" class="btn-action btn-pay">💳 To‘lov qilish (${t.narxi} so‘m)</button>`;
+                        tugma = `<button onclick="alert('To‘lov qilinishi lozim!')" class="btn-action" style="background:#059669; color:white;">💳 To‘lov qilish (${t.narxi} so‘m)</button>`;
                     } else {
                         tugma = `<a href="/test/${t.id}" class="btn-action btn-start">🚀 Testni Boshlash</a>`;
                     }
@@ -314,95 +180,67 @@
                         </div>
                     `;
                 }).join('');
-            } catch(e) {
-                container.innerHTML = `<p style="color: red;">Aloqa xatosi yuz berdi!</p>`;
-            }
+            } catch(e) { container.innerHTML = `<p style="color:red;">Aloqa xatosi!</p>`; }
         }
 
-        // Har 1 soniyada teskari sanoqni hisoblovchi jonli taymer
+        // TAHLILNI KO'RISH
+        async function korishTahlil(testId) {
+            try {
+                const res = await fetch(`/api/oquvchi/test_tahlil/${testId}/${userInfo.id}`);
+                const data = await res.json();
+                if (!res.ok) return alert(data.xatolik || "Xatolik!");
+
+                const box = document.getElementById("tahlilSavollarJoyi");
+                box.innerHTML = data.savollar.map((s, i) => `
+                    <div style="background: ${s.togrimi ? '#f0fdf4' : '#fef2f2'}; border: 1.5px solid ${s.togrimi ? '#bbf7d0' : '#fecaca'}; border-radius: 12px; padding: 14px; margin-bottom: 12px;">
+                        <b style="color: #1e1b4b;">${i + 1}. ${s.savol_matni}</b>
+                        <div style="margin-top: 8px; font-size: 13px; font-weight: 700;">
+                            Siz tanlagan: <span style="color: ${s.togrimi ? '#16a34a' : '#dc2626'}; font-size: 15px;">${s.belgilangan}</span> | 
+                            To‘g‘ri javob: <span style="color: #16a34a; font-size: 15px;">${s.togri_javob}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById("tahlilModal").style.display = "flex";
+            } catch(e) { alert("Tahlilni yuklab bo‘lmadi!"); }
+        }
+
+        // TAYMER
         setInterval(() => {
             document.querySelectorAll(".vaqt-sanoq").forEach(el => {
-                const maqsadVaqtStr = el.getAttribute("data-vaqt");
+                const vaqtStr = el.getAttribute("data-vaqt");
                 const testId = el.getAttribute("data-id");
-                if (!maqsadVaqtStr) return;
-
-                const maqsadVaqt = new Date(maqsadVaqtStr).getTime();
-                const hozir = new Date().getTime();
-                const oraliq = maqsadVaqt - hozir;
-
+                if (!vaqtStr) return;
+                const oraliq = new Date(vaqtStr).getTime() - new Date().getTime();
                 if (oraliq <= 0) {
                     const amalQuti = document.getElementById(`amal-joyi-${testId}`);
-                    if (amalQuti) {
-                        amalQuti.innerHTML = `<a href="/test/${testId}" class="btn-action btn-start">🚀 Testni Boshlash</a>`;
-                    }
+                    if (amalQuti) amalQuti.innerHTML = `<a href="/test/${testId}" class="btn-action btn-start">🚀 Testni Boshlash</a>`;
                 } else {
-                    const kun = Math.floor(oraliq / (1000 * 60 * 60 * 24));
-                    const soat = Math.floor((oraliq % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const daqiqa = Math.floor((oraliq % (1000 * 60 * 60)) / (1000 * 60));
-                    const soniya = Math.floor((oraliq % (1000 * 60)) / 1000);
-
-                    let korsatish = "";
-                    if (kun > 0) korsatish += `${kun}k `;
-                    korsatish += `${String(soat).padStart(2, '0')}:${String(daqiqa).padStart(2, '0')}:${String(soniya).padStart(2, '0')}`;
-
-                    el.innerText = korsatish;
+                    const s = Math.floor((oraliq % (1000 * 60 * 60)) / (1000 * 60));
+                    const son = Math.floor((oraliq % (1000 * 60)) / 1000);
+                    el.innerText = `${String(Math.floor(oraliq / (1000 * 60 * 60))).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(son).padStart(2, '0')}`;
                 }
             });
         }, 1000);
 
         async function yuklashNatijalar() {
-            try {
-                const res = await fetch(`/api/oquvchi_natijalari/${userInfo.id}`);
-                const data = await res.json();
-                const tbody = document.getElementById("natijalarTable");
-
-                if (!data.tarix || data.tarix.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="padding: 15px; text-align: center; color: #94a3b8;">Hali natijalar mavjud emas</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = data.tarix.map(n => `
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 12px; font-weight: 700; color: #3730a3;">${n.fan}</td>
-                        <td style="text-transform: capitalize;">${n.bosqich_turi}</td>
-                        <td>${n.bosqich_turi === 'haftalik' ? n.oy_nomi + ' (' + n.hafta_raqami + '-hafta)' : n.oy_nomi}</td>
-                        <td style="font-weight: 800; color: #16a34a;">${n.ball} ball</td>
-                        <td><span style="background: #eef2ff; color: #4338ca; padding: 3px 8px; border-radius: 6px; font-weight: 700;">${n.orin}-o‘rin</span></td>
-                        <td style="color: #64748b; font-size: 12px;">${n.sana ? n.sana.slice(0, 10) : '-'}</td>
-                    </tr>
-                `).join('');
-            } catch(e) { console.error(e); }
-        }
-
-        function ochishTolov(testId, summa) {
-            document.getElementById("modalTestId").value = testId;
-            document.getElementById("modalSumma").innerText = summa;
-            document.getElementById("payModal").style.display = "flex";
-        }
-
-        function yopishModal() {
-            document.getElementById("payModal").style.display = "none";
-        }
-
-        async function yuborishChek(e) {
-            e.preventDefault();
-            const fayl = document.getElementById("chekFayl").files[0];
-            const testId = document.getElementById("modalTestId").value;
-            const summa = document.getElementById("modalSumma").innerText;
-
-            const fd = new FormData();
-            fd.append("oquvchi_id", userInfo.id);
-            fd.append("test_id", testId);
-            fd.append("summa", summa);
-            fd.append("chek", fayl);
-
-            try {
-                const res = await fetch("/api/tolov/chek_yuklash", { method: "POST", body: fd });
-                const d = await res.json();
-                alert(d.xabar);
-                yopishModal();
-                yuklashTestlar();
-            } catch(err) { alert("Xatolik yuz berdi!"); }
+            const res = await fetch(`/api/oquvchi_natijalari/${userInfo.id}`);
+            const data = await res.json();
+            const tbody = document.getElementById("natijalarTable");
+            if (!data.tarix || data.tarix.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="padding: 15px; text-align: center; color: #94a3b8;">Hali natijalar yo‘q</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = data.tarix.map(n => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 12px; font-weight: 700; color: #3730a3;">${n.fan}</td>
+                    <td style="text-transform: capitalize;">${n.bosqich_turi}</td>
+                    <td>${n.oy_nomi}</td>
+                    <td style="font-weight: 800; color: #16a34a;">${n.ball} ball</td>
+                    <td><span style="background: #eef2ff; color: #4338ca; padding: 3px 8px; border-radius: 6px; font-weight: 700;">${n.orin}-o‘rin</span></td>
+                    <td style="color: #64748b; font-size: 12px;">${n.sana ? n.sana.slice(0, 10) : '-'}</td>
+                </tr>
+            `).join('');
         }
 
         yuklashTestlar();
