@@ -6,12 +6,13 @@
     <title>O‘qituvchi Ishchi Paneli | Qorako‘l Ziyo</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
-        const ustozData = JSON.parse(sessionStorage.getItem("oqituvchi_auth") || "null");
+        const ustozData = JSON.parse(sessionStorage.getItem("oqituvchi_auth") || sessionStorage.getItem("oqituvchi_info") || "null");
         if (!ustozData) {
             window.location.href = "/oqituvchi-login";
         }
         function chiqish() {
             sessionStorage.removeItem("oqituvchi_auth");
+            sessionStorage.removeItem("oqituvchi_info");
             window.location.href = "/oqituvchi-login";
         }
     </script>
@@ -44,6 +45,8 @@
         .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 100; }
         .modal-box { background: white; border-radius: 20px; padding: 28px; max-width: 900px; width: 95%; max-height: 85vh; overflow-y: auto; }
         .btn-sm-action { padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; border: none; }
+        
+        .savol-item-box { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
     </style>
 </head>
 <body>
@@ -193,7 +196,7 @@
         </div>
     </div>
 
-    <!-- 2. TESTNI TAHRIRLASH MODALI -->
+    <!-- 2. TEST MA'LUMOTLARINI TAHRIRLASH MODALI -->
     <div class="modal" id="tahrirModal">
         <div class="modal-box" style="max-width: 600px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -212,6 +215,7 @@
                         <select id="edit_sinf">
                             <option value="5">5-sinf</option><option value="6">6-sinf</option><option value="7">7-sinf</option>
                             <option value="8">8-sinf</option><option value="9">9-sinf</option><option value="10">10-sinf</option><option value="11">11-sinf</option>
+                            <option value="0">Barcha sinflar</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -222,15 +226,26 @@
                     </div>
                     <div class="input-group">
                         <label>Daqiqa:</label>
-                        <input type="number" id="edit_daqiqa" required>
+                        <input type="number" id="edit_daqiqa" required min="5" max="180">
                     </div>
                     <div class="input-group">
                         <label>Narxi (so‘m):</label>
-                        <input type="number" id="edit_narxi" required>
+                        <input type="number" id="edit_narxi" required min="0" step="500">
                     </div>
                 </div>
                 <button type="submit" class="btn-submit" style="width: 100%;">💾 Saqlash</button>
             </form>
+        </div>
+    </div>
+
+    <!-- 3. TEST SAVOLLARINI KO'RISH VA TAHRIRLASH MODALI -->
+    <div class="modal" id="savollarBoshqaruvModal">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 12px;">
+                <h3 id="savollarModalSarlavha" style="color: #4338ca;">📝 Test Savollari Ro‘yxati</h3>
+                <button onclick="yopishModal('savollarBoshqaruvModal')" style="border: none; background: #fee2e2; color: #dc2626; padding: 6px 14px; border-radius: 8px; font-weight: 800; cursor: pointer;">✕ Yopish</button>
+            </div>
+            <div id="testSavollarRoyxatJoyi">Yuklanmoqda...</div>
         </div>
     </div>
 
@@ -313,11 +328,12 @@
                         <span class="badge badge-${t.turi}">${t.turi.toUpperCase()}</span>
                         <b style="font-size: 15px; margin-left: 8px;">[ID: ${t.id}] ${t.nomi}</b>
                         <div style="font-size: 13px; color: #64748b; margin-top: 4px;">
-                            Sinf: ${t.sinf}-sinf | Savollar: <b style="color: #4338ca;">${t.savollar_soni || 0} ta</b> | Vaqt: ${t.davomiyligi_daqiqa} daq
+                            Sinf: ${t.sinf}-sinf | Savollar: <b style="color: #4338ca;">${t.savollar_soni || 0} ta</b> | Vaqt: ${t.davomiyligi_daqiqa} daq | Narxi: ${t.narxi} so‘m
                         </div>
                     </div>
                     <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                         <button onclick="ochishStatistika(${t.id}, '${t.nomi.replace(/'/g, "\\'")}')" class="btn-sm-action" style="background: #3b82f6; color: white;">📊 Statistika & Monitoring</button>
+                        <button onclick="ochishSavollarBoshqaruv(${t.id}, '${t.nomi.replace(/'/g, "\\'")}')" class="btn-sm-action" style="background: #8b5cf6; color: white;">📝 Savollar (${t.savollar_soni || 0})</button>
                         <button onclick="ochishTahrirModal(${t.id}, '${t.nomi.replace(/'/g, "\\'")}', ${t.sinf}, '${t.turi}', ${t.davomiyligi_daqiqa}, ${t.narxi})" class="btn-sm-action" style="background: #f59e0b; color: white;">✏️ Tahrirlash</button>
                         <button onclick="ochishJavoblar(${t.id}, ${!t.javoblar_ochiq})" class="btn-sm-action" style="background: ${t.javoblar_ochiq ? '#ef4444' : '#10b981'}; color: white;">
                             ${t.javoblar_ochiq ? "🔒 Javoblarni Yopish" : "🔓 Javoblarni Ochish"}
@@ -326,6 +342,64 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        // TESTNING SAVOLLARINI KO'RISH VA O'CHIRISH
+        let joriyBoshqarilayotganTestId = null;
+        async function ochishSavollarBoshqaruv(testId, testNomi) {
+            joriyBoshqarilayotganTestId = testId;
+            document.getElementById("savollarModalSarlavha").innerText = `📝 [ID: ${testId}] ${testNomi} - Savollar Banki`;
+            const box = document.getElementById("testSavollarRoyxatJoyi");
+            box.innerHTML = "<p style='color:#64748b; text-align:center;'>Savollar yuklanmoqda...</p>";
+            document.getElementById("savollarBoshqaruvModal").style.display = "flex";
+
+            try {
+                const res = await fetch(`/api/test/savollari/${testId}`);
+                const data = await res.json();
+                const savollar = data.savollar || [];
+
+                if (savollar.length === 0) {
+                    box.innerHTML = `<p style="padding: 20px; text-align: center; color: #94a3b8;">Ushbu testga hali savollar qo‘shilmagan.</p>`;
+                    return;
+                }
+
+                box.innerHTML = savollar.map((s, idx) => `
+                    <div class="savol-item-box">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <div style="font-weight: 800; color: #1e1b4b; font-size: 15px; flex: 1; padding-right: 15px;">
+                                ${idx + 1}. ${s.savol_matni}
+                            </div>
+                            <button onclick="ochirishYakkaSavol(${s.id})" class="btn-sm-action" style="background: #fee2e2; color: #dc2626;">🗑️ O‘chirish</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-top: 10px;">
+                            <div style="${s.togri_javob === 'A' ? 'font-weight:800; color:#16a34a;' : 'color:#475569;'}">A) ${s.a}</div>
+                            <div style="${s.togri_javob === 'B' ? 'font-weight:800; color:#16a34a;' : 'color:#475569;'}">B) ${s.b}</div>
+                            <div style="${s.togri_javob === 'C' ? 'font-weight:800; color:#16a34a;' : 'color:#475569;'}">C) ${s.c}</div>
+                            <div style="${s.togri_javob === 'D' ? 'font-weight:800; color:#16a34a;' : 'color:#475569;'}">D) ${s.d}</div>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 12px; font-weight: 700; color: #16a34a;">
+                            ✔️ To‘g‘ri variant: ${s.togri_javob}
+                        </div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                box.innerHTML = "<p style='color:red;'>Savollarni yuklashda xatolik yuz berdi!</p>";
+            }
+        }
+
+        async function ochirishYakkaSavol(savolId) {
+            if (!confirm("Ushbu savolni testdan butunlay o‘chirib tashlamoqchimisiz?")) return;
+            try {
+                const res = await fetch(`/api/savol/ochirish/${savolId}`, { method: 'DELETE' });
+                const d = await res.json();
+                alert(d.xabar || "Savol o‘chirildi!");
+                if (joriyBoshqarilayotganTestId) {
+                    ochishSavollarBoshqaruv(joriyBoshqarilayotganTestId, "");
+                    yuklashUstozTestlari();
+                }
+            } catch(e) {
+                alert("Savolni o‘chirishda xatolik!");
+            }
         }
 
         // STATISTIKA VA JONLI MONITORING
@@ -359,9 +433,7 @@
                                         🚫 Chiqarib yuborish
                                     </button>
                                 ` : `
-                                    <button onclick='alert(JSON.stringify(\${JSON.stringify(u.tahlil)}, null, 2))' class="btn-sm-action" style="background: #6366f1; color: white;">
-                                        🔍 Xatolarini ko‘rish
-                                    </button>
+                                    <span style="color: #64748b; font-size: 12px; font-weight: 700;">Tugatilgan</span>
                                 `}
                             </td>
                         </tr>
@@ -380,7 +452,7 @@
             ochishStatistika(testId, "Yangilandi");
         }
 
-        // TAHRIRLASH
+        // TEST TAHRIRLASH
         function ochishTahrirModal(id, nomi, sinf, turi, daqiqa, narxi) {
             document.getElementById("edit_test_id").value = id;
             document.getElementById("edit_nomi").value = nomi;
@@ -461,6 +533,11 @@
             };
             const res = await fetch("/api/test/savol_qoshish", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
             const d = await res.json(); alert(d.xabar);
+            document.getElementById("yakka_savol").value = "";
+            document.getElementById("yakka_a").value = "";
+            document.getElementById("yakka_b").value = "";
+            document.getElementById("yakka_c").value = "";
+            document.getElementById("yakka_d").value = "";
             yuklashUstozTestlari();
         }
     </script>
