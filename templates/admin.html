@@ -39,7 +39,12 @@
         table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
         th { background: #334155; color: #e2e8f0; padding: 10px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #334155; color: #cbd5e1; }
-        .btn-action-sm { padding: 5px 10px; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; font-size: 12px; text-decoration: none; display: inline-block; }
+        .btn-action-sm { padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; font-size: 12px; }
+
+        /* Chek ko'rish modali */
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
+        .modal-box { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; border: 1px solid #475569; }
+        .modal-box img { max-width: 100%; max-height: 70vh; border-radius: 10px; border: 1px solid #334155; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -73,7 +78,7 @@
             </div>
         </div>
 
-        <!-- 2. RO'YXATDAN O'TGAN BARCHA O'QUVCHILARNI BOSHQARISH -->
+        <!-- 2. RO'YXATDAN O'TGAN O'QUVCHILAR -->
         <div class="card" style="border: 2px solid #6366f1;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                 <h2 style="color: #818cf8; margin: 0;">🎓 O‘quvchilar Boshqaruvi va Kabinetga Kirish</h2>
@@ -99,7 +104,7 @@
             </div>
         </div>
 
-        <!-- 3. O'QITUVCHILAR RO'YXATI VA ULARNING PANELIGA KIRISH -->
+        <!-- 3. O'QITUVCHILAR RO'YXATI -->
         <div class="card" style="border: 2px solid #10b981;">
             <h2>👥 O‘qituvchilar Ro‘yxati va Paneliga Kirish</h2>
             <div style="overflow-x: auto;">
@@ -217,10 +222,73 @@
 
     </div>
 
+    <!-- CHEKNI KO'RSATUVCHI MODAL OYNA -->
+    <div class="modal" id="chekModal">
+        <div class="modal-box">
+            <h3 style="color: #38bdf8; margin-bottom: 12px;">🧾 To‘lov Cheki</h3>
+            <img id="chekModalImg" src="" alt="To'lov cheki">
+            <div>
+                <button onclick="document.getElementById('chekModal').style.display='none'" style="background: #ef4444; color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 700; cursor: pointer;">Yopish</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let barchaOquvchilar = [];
+        let tolovlarRoyxati = [];
 
-        // 1. O'quvchilarni yuklash
+        // 1. KUTILAYOTGAN TO'LOVLAR
+        async function yuklashTolovlar() {
+            try {
+                const res = await fetch("/api/admin/kutilayotgan_tolovlar");
+                tolovlarRoyxati = await res.json();
+                const tbody = document.getElementById("tolovlarTbody");
+                
+                if (!tolovlarRoyxati || tolovlarRoyxati.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Kutilayotgan to‘lov cheklari yo‘q.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = tolovlarRoyxati.map((t, idx) => `
+                    <tr>
+                        <td style="font-weight: 700; color: white;">${t.fio}</td>
+                        <td>${t.telefon}</td>
+                        <td style="color: #38bdf8;">${t.test_nomi}</td>
+                        <td style="font-weight: 800; color: #34d399;">${t.summa} so‘m</td>
+                        <td>
+                            <button onclick="korsatChekModal(${idx})" class="btn-action-sm" style="background: #0284c7; color: white;">
+                                🔍 Chekni ko‘rish
+                            </button>
+                        </td>
+                        <td>
+                            <button onclick="tasdiqlashTolov(${t.id})" class="btn-action-sm" style="background: #10b981; color: white;">
+                                ✅ Tasdiqlash
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        function korsatChekModal(idx) {
+            const t = tolovlarRoyxati[idx];
+            if (t && t.chek_rasm) {
+                document.getElementById("chekModalImg").src = t.chek_rasm;
+                document.getElementById("chekModal").style.display = "flex";
+            }
+        }
+
+        async function tasdiqlashTolov(tolovId) {
+            if (!confirm("To‘lovni tasdiqlaysizmi? O‘quvchiga test ochiladi.")) return;
+            try {
+                const res = await fetch(`/api/admin/tolov_tasdiqlash/${tolovId}?holat=tasdiqlandi`, { method: "PUT" });
+                const d = await res.json();
+                alert(d.xabar);
+                yuklashTolovlar();
+            } catch(e) { alert("Xatolik!"); }
+        }
+
+        // 2. O'QUVCHILAR BOSHQARUVI
         async function yuklashOquvchilar() {
             try {
                 const res = await fetch("/api/admin/oquvchilar");
@@ -256,30 +324,23 @@
             `).join('');
         }
 
-        // SUPER ADMIN SIFATIDA O'QUVCHI KABINETIGA KIRISH
         function kirishOquvchiSifatida(user) {
-            const oquvchiData = {
-                id: user.id,
-                fio: user.fio,
-                sinf: user.sinf,
-                viloyat: user.viloyat || "Buxoro",
-                maktab: user.maktab || ""
-            };
-            sessionStorage.setItem("user_info", JSON.stringify(oquvchiData));
+            sessionStorage.setItem("user_info", JSON.stringify({
+                id: user.id, fio: user.fio, sinf: user.sinf, viloyat: user.viloyat || "Buxoro", maktab: user.maktab || ""
+            }));
             window.open("/kabinet", "_blank");
         }
 
         function qidirishOquvchi() {
             const q = document.getElementById("oquvchiQidiruv").value.toLowerCase();
             const filtrlangan = barchaOquvchilar.filter(o => 
-                (o.fio && o.fio.toLowerCase().includes(q)) || 
-                (o.telefon && o.telefon.includes(q))
+                (o.fio && o.fio.toLowerCase().includes(q)) || (o.telefon && o.telefon.includes(q))
             );
             chizishOquvchilar(filtrlangan);
         }
 
         async function ozgartirishParol(oid) {
-            const yangi = prompt("Yangi parol:");
+            const yangi = prompt("O‘quvchi uchun yangi parolni kiriting:");
             if (!yangi || !yangi.trim()) return;
             try {
                 const res = await fetch(`/api/admin/oquvchi_parol/${oid}`, {
@@ -290,11 +351,11 @@
                 const d = await res.json();
                 alert(d.xabar || d.xatolik);
                 yuklashOquvchilar();
-            } catch(e) { alert("Xatolik!"); }
+            } catch(e) { alert("Parolni o‘zgartirishda xatolik!"); }
         }
 
         async function tozalashTarix(oid) {
-            if (!confirm("O‘quvchining test urinishlari va natijalari tozalansinmi?")) return;
+            if (!confirm("O‘quvchining barcha natijalari tozalansinmi?")) return;
             try {
                 const res = await fetch(`/api/admin/oquvchi_tarix_tozalash/${oid}`, { method: "DELETE" });
                 const d = await res.json();
@@ -303,7 +364,7 @@
         }
 
         async function ochirishOquvchi(oid) {
-            if (!confirm("O‘quvchi butunlay o‘chirilsinmi?")) return;
+            if (!confirm("O‘quvchi tizimdan butunlay o‘chirilsinmi?")) return;
             try {
                 const res = await fetch(`/api/admin/oquvchi_ochirish/${oid}`, { method: "DELETE" });
                 const d = await res.json();
@@ -312,50 +373,7 @@
             } catch(e) { alert("Xatolik!"); }
         }
 
-        // 2. Kutilayotgan to'lovlar
-        async function yuklashTolovlar() {
-            try {
-                const res = await fetch("/api/admin/kutilayotgan_tolovlar");
-                const data = await res.json();
-                const tbody = document.getElementById("tolovlarTbody");
-                
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 15px;">Kutilayotgan to‘lov cheklari mavjud emas.</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = data.map(t => `
-                    <tr>
-                        <td style="font-weight: 700; color: white;">${t.fio}</td>
-                        <td>${t.telefon}</td>
-                        <td style="color: #38bdf8;">${t.test_nomi}</td>
-                        <td style="font-weight: 800; color: #34d399;">${t.summa} so‘m</td>
-                        <td>
-                            <a href="${t.chek_rasm}" target="_blank" class="btn-action-sm" style="background: #0284c7; color: white;">
-                                🔍 Chekni ko‘rish
-                            </a>
-                        </td>
-                        <td>
-                            <button onclick="tasdiqlashTolov(${t.id})" class="btn-action-sm" style="background: #10b981; color: white;">
-                                ✅ Tasdiqlash
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch(e) { console.error(e); }
-        }
-
-        async function tasdiqlashTolov(tolovId) {
-            if (!confirm("To‘lovni tasdiqlaysizmi? O‘quvchiga test ochiladi.")) return;
-            try {
-                const res = await fetch(`/api/admin/tolov_tasdiqlash/${tolovId}?holat=tasdiqlandi`, { method: "PUT" });
-                const d = await res.json();
-                alert(d.xabar);
-                yuklashTolovlar();
-            } catch(e) { alert("Xatolik!"); }
-        }
-
-        // 3. O'qituvchilar va ularning paneliga to'g'ridan-to'g'ri kirish
+        // 3. O'QITUVCHILAR VA PAROL ALMASHTIRISH
         async function yuklashOqituvchilar() {
             const res = await fetch("/api/admin/oqituvchilar");
             const data = await res.json();
@@ -369,7 +387,8 @@
                     <td>${o.telefon || '-'}</td>
                     <td>
                         <div style="display: flex; gap: 6px;">
-                            <button onclick='kirishUstozSifatida(${JSON.stringify(o).replace(/'/g, "&apos;")})' class="btn-action-sm" style="background: #10b981; color: white;" title="O‘qituvchi paneliga kirish">🚀 Kirish</button>
+                            <button onclick='kirishUstozSifatida(${JSON.stringify(o).replace(/'/g, "&apos;")})' class="btn-action-sm" style="background: #10b981; color: white;">🚀 Kirish</button>
+                            <button onclick="ozgartirishUstozParol(${o.id})" class="btn-action-sm" style="background: #3b82f6; color: white;">🔑 Parol</button>
                             <button onclick="ochirishOqituvchi(${o.id})" class="btn-action-sm" style="background:#ef4444; color:white;">O‘chirish</button>
                         </div>
                     </td>
@@ -377,15 +396,26 @@
             `).join('');
         }
 
-        // SUPER ADMIN SIFATIDA O'QITUVCHI PANELIGA KIRISH
         function kirishUstozSifatida(ustoz) {
-            const ustozData = {
-                id: ustoz.id,
-                fio: ustoz.fio,
-                fan: ustoz.fan
-            };
-            sessionStorage.setItem("oqituvchi_info", JSON.stringify(ustozData));
+            sessionStorage.setItem("oqituvchi_info", JSON.stringify({
+                id: ustoz.id, fio: ustoz.fio, fan: ustoz.fan
+            }));
             window.open("/oqituvchi", "_blank");
+        }
+
+        async function ozgartirishUstozParol(tid) {
+            const yangi = prompt("O‘qituvchi uchun yangi parolni kiriting:");
+            if (!yangi || !yangi.trim()) return;
+            try {
+                const res = await fetch(`/api/admin/oqituvchi_parol/${tid}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ yangi_parol: yangi.trim() })
+                });
+                const d = await res.json();
+                alert(d.xabar || d.xatolik);
+                yuklashOqituvchilar();
+            } catch(e) { alert("O‘qituvchi parolini o‘zgartirishda xatolik!"); }
         }
 
         async function qoshishOqituvchi(e) {
@@ -414,7 +444,7 @@
             yuklashOqituvchilar();
         }
 
-        // 4. Imtihonlar
+        // 4. IMTIHONLAR
         async function yuklashImtihonlar() {
             const res = await fetch("/api/admin/imtihonlar");
             const data = await res.json();
