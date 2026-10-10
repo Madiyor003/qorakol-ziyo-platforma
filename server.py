@@ -458,25 +458,72 @@ async def delete_student(oid: int):
         cursor.close()
         conn.close()
 
-# --- 4. To'lovlar va cheklar ---
+# --- 4. To'lovlar va cheklar (Base64 formatida saqlash - yo'qolib ketmaydi) ---
+import base64
+
 @app.post("/api/tolov/chek_yuklash")
 async def upload_payment_receipt(oquvchi_id: int = Form(...), test_id: int = Form(...), summa: int = Form(10000), chek: UploadFile = File(...)):
     conn = get_db()
     cursor = conn.cursor()
     try:
-        fayl_kengaytma = chek.filename.split(".")[-1]
-        yangi_nom = f"chek_{oquvchi_id}_{test_id}_{int(datetime.now().timestamp())}.{fayl_kengaytma}"
-        fayl_manzili = os.path.join(UPLOADS_DIR, yangi_nom)
+        baytlar = await chek.read()
+        kengaytma = chek.filename.split(".")[-1].lower()
+        if kengaytma in ["jpg", "jpeg"]:
+            mime = "image/jpeg"
+        elif kengaytma == "png":
+            mime = "image/png"
+        else:
+            mime = "image/jpeg"
+            
+        b64_matn = f"data:{mime};base64," + base64.b64encode(baytlar).decode("utf-8")
 
-        with open(fayl_manzili, "wb") as buffer:
-            shutil.copyfileobj(chek.file, buffer)
-
-        db_url = f"/static/uploads/{yangi_nom}"
         cursor.execute(f"""
             INSERT INTO tolovlar (oquvchi_id, test_id, chek_rasm, summa, holat)
             VALUES ({PH}, {PH}, {PH}, {PH}, 'kutilmoqda')
-        """, (oquvchi_id, test_id, db_url, summa))
+        """, (oquvchi_id, test_id, b64_matn, summa))
         return {"holat": "Muvaffaqiyatli", "xabar": "To‘lov chekingiz qabul qilindi!"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"xatolik": str(e)})
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.get("/api/admin/kutilayotgan_tolovlar")
+async def get_pending_payments():
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id, oquvchi_id, test_id, summa, chek_rasm, yuklangan_vaqt FROM tolovlar WHERE holat = 'kutilmoqda' ORDER BY id DESC")
+        rows = cursor.fetchall()
+        natija = []
+        for r in rows:
+            cursor.execute(f"SELECT fio, telefon FROM oquvchilar WHERE id = {PH}", (r[1],))
+            o = cursor.fetchone()
+            cursor.execute(f"SELECT nomi FROM testlar WHERE id = {PH}", (r[2],))
+            t = cursor.fetchone()
+            natija.append({
+                "id": r[0],
+                "fio": o[0] if o else "Noma'lum",
+                "telefon": o[1] if o else "-",
+                "test_nomi": t[0] if t else "Test",
+                "summa": r[3],
+                "chek_rasm": r[4],  # Base64 rasm kodi
+                "vaqt": str(r[5])
+            })
+        return natija
+    except:
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.put("/api/admin/tolov_tasdiqlash/{tolov_id}")
+async def approve_payment(tolov_id: int, holat: str = "tasdiqlandi"):
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f"UPDATE tolovlar SET holat = {PH} WHERE id = {PH}", (holat, tolov_id))
+        return {"holat": "Muvaffaqiyatli", "xabar": f"To‘lov holati '{holat}' ga o‘zgartirildi!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"xatolik": str(e)})
     finally:
