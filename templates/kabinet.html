@@ -129,6 +129,17 @@
         .btn-locked { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
         .btn-done { background: #e0e7ff; color: #4338ca; cursor: default; }
 
+        .timer-box {
+            background: #fffbeb;
+            color: #b45309;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 14px;
+            text-align: center;
+            border: 1.5px dashed #f59e0b;
+        }
+
         /* Modal To'lov */
         .modal {
             position: fixed;
@@ -271,8 +282,13 @@
                         tugma = `<div class="btn-action btn-done">✅ Ishlangan: ${t.toplagan_ball} ball</div>`;
                     } else if (t.holat === "otkazildi") {
                         tugma = `<div class="btn-action btn-locked">⛔ O‘tkazib yuborilgan</div>`;
-                    } else if (t.holat === "kutilmoqda") {
-                        tugma = `<div class="btn-action btn-locked">⏳ Boshlanish vaqti kutilmoqda</div>`;
+                    } else if (t.holat === "kutilmoqda" && t.boshlanish_vaqti) {
+                        tugma = `
+                            <div class="timer-box" id="taymer-quti-${t.id}">
+                                ⏳ Boshlanishiga: <br>
+                                <span class="vaqt-sanoq" data-vaqt="${t.boshlanish_vaqti}" data-id="${t.id}" style="font-size: 16px; font-weight: 800; color: #d97706;">Hisoblanmoqda...</span>
+                            </div>
+                        `;
                     } else if (!t.tolangan && t.narxi > 0) {
                         tugma = `<button onclick="ochishTolov(${t.id}, ${t.narxi})" class="btn-action btn-pay">💳 To‘lov qilish (${t.narxi} so‘m)</button>`;
                     } else {
@@ -292,7 +308,9 @@
                                     <span>💰 Narxi: ${t.narxi > 0 ? t.narxi + " so‘m" : "Bepul"}</span>
                                 </div>
                             </div>
-                            ${tugma}
+                            <div id="amal-joyi-${t.id}">
+                                ${tugma}
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -300,6 +318,37 @@
                 container.innerHTML = `<p style="color: red;">Aloqa xatosi yuz berdi!</p>`;
             }
         }
+
+        // Har 1 soniyada teskari sanoqni hisoblovchi jonli taymer
+        setInterval(() => {
+            document.querySelectorAll(".vaqt-sanoq").forEach(el => {
+                const maqsadVaqtStr = el.getAttribute("data-vaqt");
+                const testId = el.getAttribute("data-id");
+                if (!maqsadVaqtStr) return;
+
+                const maqsadVaqt = new Date(maqsadVaqtStr).getTime();
+                const hozir = new Date().getTime();
+                const oraliq = maqsadVaqt - hozir;
+
+                if (oraliq <= 0) {
+                    const amalQuti = document.getElementById(`amal-joyi-${testId}`);
+                    if (amalQuti) {
+                        amalQuti.innerHTML = `<a href="/test/${testId}" class="btn-action btn-start">🚀 Testni Boshlash</a>`;
+                    }
+                } else {
+                    const kun = Math.floor(oraliq / (1000 * 60 * 60 * 24));
+                    const soat = Math.floor((oraliq % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const daqiqa = Math.floor((oraliq % (1000 * 60 * 60)) / (1000 * 60));
+                    const soniya = Math.floor((oraliq % (1000 * 60)) / 1000);
+
+                    let korsatish = "";
+                    if (kun > 0) korsatish += `${kun}k `;
+                    korsatish += `${String(soat).padStart(2, '0')}:${String(daqiqa).padStart(2, '0')}:${String(soniya).padStart(2, '0')}`;
+
+                    el.innerText = korsatish;
+                }
+            });
+        }, 1000);
 
         async function yuklashNatijalar() {
             try {
