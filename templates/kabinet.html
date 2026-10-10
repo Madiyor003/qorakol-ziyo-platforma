@@ -43,7 +43,7 @@
         .btn-done { background: #e0e7ff; color: #4338ca; }
         .timer-box { background: #fffbeb; color: #b45309; padding: 10px 14px; border-radius: 10px; font-weight: 800; font-size: 14px; text-align: center; border: 1.5px dashed #f59e0b; }
 
-        /* Modal */
+        /* Modal uslublari */
         .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 100; }
         .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto; }
     </style>
@@ -142,11 +142,9 @@
                     if (t.ishlangan) {
                         tugma = `
                             <div class="btn-action btn-done" style="margin-bottom: 6px;">✅ Ishlangan: ${t.toplagan_ball} ball</div>
-                            ${t.javoblar_ochiq ? `
-                                <button onclick="korishTahlil(\${t.id})" style="width: 100%; background: #059669; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer;">
-                                    👁️ Xatolar Tahlilini Ko‘rish
-                                </button>
-                            ` : ''}
+                            <button onclick="korishTahlil(${t.id})" style="width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                👁️ Xatolar Tahlilini Ko‘rish
+                            </button>
                         `;
                     } else if (t.holat === "kutilmoqda" && t.boshlanish_vaqti) {
                         tugma = `
@@ -183,29 +181,40 @@
             } catch(e) { container.innerHTML = `<p style="color:red;">Aloqa xatosi!</p>`; }
         }
 
-        // TAHLILNI KO'RISH
         async function korishTahlil(testId) {
             try {
                 const res = await fetch(`/api/oquvchi/test_tahlil/${testId}/${userInfo.id}`);
                 const data = await res.json();
-                if (!res.ok) return alert(data.xatolik || "Xatolik!");
+                
+                if (!res.ok) {
+                    alert(data.xatolik || "Xatolik yuz berdi!");
+                    return;
+                }
 
                 const box = document.getElementById("tahlilSavollarJoyi");
-                box.innerHTML = data.savollar.map((s, i) => `
-                    <div style="background: ${s.togrimi ? '#f0fdf4' : '#fef2f2'}; border: 1.5px solid ${s.togrimi ? '#bbf7d0' : '#fecaca'}; border-radius: 12px; padding: 14px; margin-bottom: 12px;">
-                        <b style="color: #1e1b4b;">${i + 1}. ${s.savol_matni}</b>
-                        <div style="margin-top: 8px; font-size: 13px; font-weight: 700;">
-                            Siz tanlagan: <span style="color: ${s.togrimi ? '#16a34a' : '#dc2626'}; font-size: 15px;">${s.belgilangan}</span> | 
-                            To‘g‘ri javob: <span style="color: #16a34a; font-size: 15px;">${s.togri_javob}</span>
+                if (!data.savollar || data.savollar.length === 0) {
+                    box.innerHTML = `<p style="padding: 15px; color: #64748b; text-align: center;">Tahlil qilish uchun savollar topilmadi.</p>`;
+                } else {
+                    box.innerHTML = data.savollar.map((s, i) => `
+                        <div style="background: ${s.togrimi ? '#f0fdf4' : '#fef2f2'}; border: 1.5px solid ${s.togrimi ? '#86efac' : '#fca5a5'}; border-radius: 12px; padding: 14px; margin-bottom: 12px; text-align: left;">
+                            <div style="font-weight: 700; color: #1e1b4b; font-size: 14px; margin-bottom: 8px;">
+                                ${i + 1}. ${s.savol_matni}
+                            </div>
+                            <div style="font-size: 13px; font-weight: 700; display: flex; gap: 15px; flex-wrap: wrap;">
+                                <span>Sizning javobingiz: <b style="color: ${s.togrimi ? '#16a34a' : '#dc2626'}; font-size: 15px;">${s.belgilangan}</b></span>
+                                <span>To‘g‘ri javob: <b style="color: #16a34a; font-size: 15px;">${s.togri_javob}</b></span>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                }
 
                 document.getElementById("tahlilModal").style.display = "flex";
-            } catch(e) { alert("Tahlilni yuklab bo‘lmadi!"); }
+            } catch(err) {
+                console.error(err);
+                alert("Aloqada xatolik yuz berdi!");
+            }
         }
 
-        // TAYMER
         setInterval(() => {
             document.querySelectorAll(".vaqt-sanoq").forEach(el => {
                 const vaqtStr = el.getAttribute("data-vaqt");
