@@ -175,7 +175,7 @@
                         tugma = `
                             <div class="btn-action btn-done" style="margin-bottom: 6px;">✅ Ishlangan: ${t.toplagan_ball} ball</div>
                             ${t.javoblar_ochiq ? `
-                                <button onclick="korishTahlil(\${t.id})" style="width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+                                <button type="button" onclick="korishTahlil(\${t.id})" style="width: 100%; background: #059669; color: white; border: none; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; display: block;">
                                     👁️ Xatolar Tahlilini Ko‘rish
                                 </button>
                             ` : `
@@ -255,6 +255,7 @@
             }
         }
 
+        // Xatolar tahlilini yuklash va modal oynani ochish
         async function korishTahlil(testId) {
             try {
                 const res = await fetch(`/api/oquvchi/test_tahlil/${testId}/${userInfo.id}`);
@@ -292,7 +293,7 @@
 
                 document.getElementById("tahlilModal").style.display = "flex";
             } catch(err) {
-                alert("Aloqada xatolik yuz berdi!");
+                alert("Server bilan aloqada xatolik yuz berdi!");
             }
         }
 
